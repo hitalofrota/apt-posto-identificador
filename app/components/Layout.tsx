@@ -9,7 +9,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
   const location = useLocation();
 
   // URL pública do brasão de Ibicuitinga para garantir exibição imediata
-  const brasaoUrl = "https://upload.wikimedia.org/wikipedia/commons/b/b3/Bras%C3%A3o_de_Ibicuitinga.png";
+  // const brasaoUrl = "https://upload.wikimedia.org/wikipedia/commons/b/b3/Bras%C3%A3o_de_Ibicuitinga.png";
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
@@ -19,7 +19,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
           <Link to="/" className="flex items-center gap-4 group">
             <div className="bg-white p-1 rounded-xl shadow-inner transition-transform group-hover:scale-105">
               <img 
-                src={brasaoUrl} 
+                // src={brasaoUrl} 
                 alt="Brasão de Ibicuitinga" 
                 className="h-12 w-auto"
                 onError={(e) => {
@@ -72,7 +72,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
         <div className="container mx-auto px-4 text-center space-y-6">
           <div className="flex justify-center mb-4">
             <img 
-              src={brasaoUrl} 
+              // src={brasaoUrl} 
               alt="Brasão Municipal" 
               className="h-20 w-auto brightness-0 invert opacity-40 hover:opacity-100 transition-opacity" 
             />
