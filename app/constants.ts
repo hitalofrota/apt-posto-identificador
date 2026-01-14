@@ -9,11 +9,17 @@ export const SERVICES: Service[] = [
 
 export const SLOT_DURATION_MINUTES = 20;
 
-// Hours configuration
 export const MORNING_START = "08:00";
 export const MORNING_END = "11:00";
 export const AFTERNOON_START = "14:10";
 export const AFTERNOON_END = "15:30";
+
+export const CONTACT_INFO = {
+  email: "juntamilitar@ibicuitinga.ce.gov.br",
+  whatsapp: "5588994874751",
+  whatsappFormatted: "(88) 99487-4751",
+  address: "Rua José Damasceno, 1577, Centro, Ibicuitinga"
+};
 
 export const CITY_NAME = "Ibicuitinga-CE";
 export const ORG_NAME = "Posto de Identificação";
