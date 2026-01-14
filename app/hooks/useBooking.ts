@@ -20,64 +20,54 @@ export const useBooking = () => {
   const [confirmedAppointment, setConfirmedAppointment] = useState<Appointment | null>(null);
   const [showDoubleBookingAlert, setShowDoubleBookingAlert] = useState(false);
 
-  // --- Handlers fiéis ao original ---
-
   const handleServiceSelect = (service: Service) => {
     setSelectedService(service);
-    // Redirecionamento automático com delay conforme o original
     setTimeout(() => setCurrentStep(1), 200);
   };
 
   const handleNext = () => setCurrentStep((prev) => prev + 1);
   const handleBack = () => setCurrentStep((prev) => prev - 1);
 
-const validateAndSubmit = (lgpdConsent: boolean) => {
-    // 1. Limpa erros anteriores antes de começar nova validação
+  const validateAndSubmit = (lgpdConsent: boolean) => {
     const errors: { [key: string]: string } = {};
 
-    // 2. Validação de Nome: pelo menos duas palavras
+    // Validação de Nome completo
     const nameWords = citizenData.name.trim().split(/\s+/);
-    if (!citizenData.name.trim()) {
-      errors.name = "O nome é obrigatório.";
-    } else if (nameWords.length < 2) {
-      errors.name = "Informe seu nome completo (pelo menos duas palavras).";
+    if (nameWords.length < 2) {
+      errors.name = "Por favor, informe seu nome completo.";
     }
 
-    // 3. Validação de Telefone: 11 dígitos numéricos
+    // Validação de Telefone (11 dígitos)
     const phoneDigits = citizenData.phone.replace(/\D/g, "");
     if (phoneDigits.length !== 11) {
-      errors.phone = "Informe um WhatsApp válido no formato (88) 99999-9999.";
+      errors.phone = "Informe um WhatsApp válido.";
     }
 
-    // 4. Validação de CPF
-    if (citizenData.hasCpf) {
-      if (!citizenData.cpf) {
-        errors.cpf = "O CPF é obrigatório.";
-      } else if (!isValidCPF(citizenData.cpf)) {
-        errors.cpf = "CPF Inválido. Verifique os números.";
-      }
+    // Validação de CPF
+    if (citizenData.hasCpf && citizenData.cpf && !isValidCPF(citizenData.cpf)) {
+      errors.cpf = "CPF Inválido.";
     }
 
-    // 5. Se houver qualquer erro, atualiza o estado e para a execução
     if (Object.keys(errors).length > 0) {
       setFormErrors(errors);
-      return; // Interrompe aqui, não avança para o sucesso
+      return;
     }
-
-    // 6. Se chegou aqui, não há erros. Limpa o estado de erros e prossegue
-    setFormErrors({});
 
     if (!lgpdConsent) return;
 
-    // Verificação de agendamento duplicado (Double Booking)
+    // --- BLOQUEIO DE AGENDAMENTO DUPLICADO ---
     if (citizenData.cpf && selectedDate) {
-      if (hasActiveAppointmentOnDay(citizenData.cpf, format(selectedDate, "yyyy-MM-dd"))) {
-        setShowDoubleBookingAlert(true);
-        return;
+      const dateStr = format(selectedDate, "yyyy-MM-dd");
+      // Chama a função do scheduler que verifica o CPF limpo no localStorage
+      const alreadyHasBooking = hasActiveAppointmentOnDay(citizenData.cpf, dateStr);
+
+      if (alreadyHasBooking) {
+        setShowDoubleBookingAlert(true); // Abre o modal de erro
+        return; // Interrompe o processo aqui
       }
     }
 
-    // Criar agendamento (Simulação de salvamento)
+    // Se não for duplicado, cria o agendamento
     const appointment = createAppointment({
       serviceId: selectedService!.id,
       serviceName: selectedService!.name,
@@ -87,7 +77,7 @@ const validateAndSubmit = (lgpdConsent: boolean) => {
     });
 
     setConfirmedAppointment(appointment);
-    setCurrentStep(3); // Vai para a tela de sucesso
+    setCurrentStep(3);
   };
 
   return {
