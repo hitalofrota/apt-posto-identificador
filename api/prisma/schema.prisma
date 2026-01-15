@@ -1,0 +1,53 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Enum para garantir que o status seja sempre um desses três
+enum AppointmentStatus {
+  scheduled
+  completed
+  cancelled
+}
+
+model Appointment {
+  id                String            @id @default(uuid())
+  protocol          String            @unique
+  serviceId         String
+  serviceName       String
+  customDescription String?
+  date              String            // Salvando como String "YYYY-MM-DD" para facilitar o match com seu front
+  time              String            // "HH:mm"
+  
+  // Dados do Cidadão (Aplanados na tabela de agendamento para simplificar o MVP)
+  citizenName       String
+  citizenHasCpf     Boolean           @default(true)
+  citizenCpf        String?
+  citizenPhone      String
+  citizenEmail      String?
+  
+  status            AppointmentStatus @default(scheduled)
+  createdAt         DateTime          @default(now())
+  notes             String?
+  rating            Int?
+  feedback          String?
+}
+
+// Modelo para gerenciar datas bloqueadas globalmente
+model BlockedDate {
+  id   String @id @default(uuid())
+  date String @unique // Formato "YYYY-MM-DD"
+}
+
+// Modelo para gerenciar horários específicos bloqueados em datas específicas
+model BlockedSlot {
+  id    String @id @default(uuid())
+  date  String // "YYYY-MM-DD"
+  time  String // "HH:mm"
+
+  @@unique([date, time]) // Garante que não existam dois bloqueios iguais
+}

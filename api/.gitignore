@@ -1,1 +1,19 @@
-node_modules
+# Dependências
+node_modules/
+dist/
+build/
+
+# Prisma
+# Ignora o arquivo de ambiente que contém a URL do banco de dados (Segurança!)
+.env
+# Se você gera o Prisma Client em um local customizado, ignore-o aqui
+/generated/prisma
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Sistema/IDE
+.DS_Store
+.vscode/

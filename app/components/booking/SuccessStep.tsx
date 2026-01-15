@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Check, MessageCircle, Printer, Star, Send } from "lucide-react";
+import { Check, MessageCircle, Printer, Star, Send, Loader2 } from "lucide-react";
 import { Appointment } from "../../types";
 import { generateWhatsAppLink, rateAppointment } from "../../services/scheduler";
 import { Link } from "react-router-dom";
@@ -13,11 +13,22 @@ export const SuccessStep: React.FC<SuccessStepProps> = ({ appointment }) => {
   const [feedback, setFeedback] = useState("");
   const [hoverRating, setHoverRating] = useState(0);
   const [ratingSubmitted, setRatingSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false); // Estado para o loading do botão
 
-  const handleRatingSubmit = () => {
+  const handleRatingSubmit = async () => {
     if (rating === 0) return;
-    rateAppointment(appointment.id, rating, feedback);
-    setRatingSubmitted(true);
+    
+    setIsSubmitting(true);
+    try {
+      // Agora aguardamos a chamada de API para o backend
+      await rateAppointment(appointment.id, rating, feedback);
+      setRatingSubmitted(true);
+    } catch (error) {
+      console.error("Erro ao enviar avaliação:", error);
+      alert("Não foi possível enviar sua avaliação agora, mas seu agendamento está seguro!");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -74,10 +85,11 @@ export const SuccessStep: React.FC<SuccessStepProps> = ({ appointment }) => {
               {[1, 2, 3, 4, 5].map((star) => (
                 <button
                   key={star}
+                  disabled={isSubmitting}
                   onClick={() => setRating(star)}
                   onMouseEnter={() => setHoverRating(star)}
                   onMouseLeave={() => setHoverRating(0)}
-                  className="transition-transform hover:scale-125"
+                  className="transition-transform hover:scale-125 disabled:opacity-50"
                 >
                   <Star
                     size={32}
@@ -89,17 +101,24 @@ export const SuccessStep: React.FC<SuccessStepProps> = ({ appointment }) => {
             {rating > 0 && (
               <div className="animate-fade-in space-y-4">
                 <textarea
+                  disabled={isSubmitting}
                   placeholder="Gostaria de deixar uma sugestão? (Opcional)"
-                  className="w-full p-4 bg-gray-50 border-2 border-gray-100 rounded-2xl text-sm font-bold text-ibicuitinga-navy outline-none focus:border-ibicuitinga-yellow resize-none"
+                  className="w-full p-4 bg-gray-50 border-2 border-gray-100 rounded-2xl text-sm font-bold text-ibicuitinga-navy outline-none focus:border-ibicuitinga-yellow resize-none disabled:opacity-50"
                   rows={2}
                   value={feedback}
                   onChange={(e) => setFeedback(e.target.value)}
                 />
                 <button
                   onClick={handleRatingSubmit}
-                  className="bg-ibicuitinga-navy text-ibicuitinga-yellow px-6 py-3 rounded-xl font-black text-xs uppercase flex items-center gap-2 mx-auto"
+                  disabled={isSubmitting}
+                  className="bg-ibicuitinga-navy text-ibicuitinga-yellow px-6 py-3 rounded-xl font-black text-xs uppercase flex items-center gap-2 mx-auto disabled:opacity-70 transition-all hover:bg-ibicuitinga-royalBlue"
                 >
-                  <Send size={16} /> Enviar Avaliação
+                  {isSubmitting ? (
+                    <Loader2 size={16} className="animate-spin" />
+                  ) : (
+                    <Send size={16} />
+                  )}
+                  {isSubmitting ? "Enviando..." : "Enviar Avaliação"}
                 </button>
               </div>
             )}

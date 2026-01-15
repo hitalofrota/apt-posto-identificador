@@ -12,6 +12,7 @@ export interface Service {
 }
 
 export interface Citizen {
+  id: string;
   name: string;
   hasCpf: boolean;
   cpf?: string;
@@ -25,13 +26,14 @@ export interface Appointment {
   serviceId: string;
   serviceName: string;
   customDescription?: string;
-  date: string; // ISO Date YYYY-MM-DD
-  time: string; // HH:mm
+  date: string;
+  time: string;
+  citizenId: string;
   citizen: Citizen;
   createdAt: string;
   status: 'scheduled' | 'completed' | 'cancelled';
   notes?: string;
-  rating?: number; // 1 to 5
+  rating?: number;
   feedback?: string;
 }
 

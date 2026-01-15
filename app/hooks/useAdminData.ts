@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { format, parseISO, startOfMonth, endOfMonth, eachDayOfInterval, isWeekend } from "date-fns";
 import {
   getAllAppointments,
@@ -11,72 +11,141 @@ import {
   updateAppointment,
 } from "../services/scheduler";
 import { Appointment } from "../types";
+interface AdminState {
+  appointments: Appointment[];
+  blockedDates: string[];
+  blockedSlots: string[];
+  isLoading: boolean;
+  error: string | null;
+}
 
 export const useAdminData = (isAuthenticated: boolean) => {
-  // --- Estados de Dados ---
-  const [appointments, setAppointments] = useState<Appointment[]>([]);
-  const [blockedDates, setBlockedDates] = useState<string[]>([]);
-  const [blockedSlots, setBlockedSlots] = useState<string[]>([]);
+  const [state, setState] = useState<AdminState>({
+    appointments: [],
+    blockedDates: [],
+    blockedSlots: [],
+    isLoading: false,
+    error: null,
+  });
 
-  // --- Função de Atualização (Facilitará a troca por fetch/axios no futuro) ---
-  const refreshData = () => {
-    setAppointments(getAllAppointments());
-    setBlockedDates(getBlockedDates());
-    setBlockedSlots(getBlockedSlots());
-  };
+  const refreshData = useCallback(async () => {
+    if (!isAuthenticated) return;
 
-  // Atualiza os dados sempre que o status de autenticação mudar
-  useEffect(() => {
-    if (isAuthenticated) {
-      refreshData();
+    setState((prev) => ({ ...prev, isLoading: true, error: null }));
+
+    try {
+      const [apps, dates, slots] = await Promise.all([
+        getAllAppointments(),
+        getBlockedDates(),
+        getBlockedSlots(),
+      ]);
+
+      setState((prev) => ({
+        ...prev,
+        appointments: apps,
+        blockedDates: dates,
+        blockedSlots: slots,
+        isLoading: false,
+      }));
+    } catch (err) {
+      console.error("Erro ao carregar dados:", err);
+      setState((prev) => ({
+        ...prev,
+        isLoading: false,
+        error: "Falha ao sincronizar com o servidor.",
+      }));
     }
   }, [isAuthenticated]);
 
-  // --- Handlers de Ação ---
-  
-  const handleBlockDate = (selectedDate: string) => {
-    toggleBlockDate(selectedDate);
+  useEffect(() => {
     refreshData();
-  };
+  }, [refreshData]);
 
-  const handleBlockSlot = (selectedDate: string, time: string) => {
-    toggleBlockSlot(selectedDate, time);
-    refreshData();
-  };
+  const handleBlockDate = async (selectedDate: string) => {
+    const previousDates = [...state.blockedDates];
+    
+    setState(prev => ({
+      ...prev,
+      blockedDates: prev.blockedDates.includes(selectedDate)
+        ? prev.blockedDates.filter(d => d !== selectedDate)
+        : [...prev.blockedDates, selectedDate]
+    }));
 
-  const handleBlockMonth = (blockManagerMonth: string, isBlocked: boolean) => {
-    const action = isBlocked ? "LIBERAR" : "INABILITAR";
-    if (
-      window.confirm(
-        `Tem certeza que deseja ${action} todos os dias e horários úteis de ${blockManagerMonth}?`
-      )
-    ) {
-      toggleBlockMonth(blockManagerMonth);
-      refreshData();
+    try {
+      await toggleBlockDate(selectedDate);
+    } catch (err) {
+      setState(prev => ({ ...prev, blockedDates: previousDates }));
+      alert("Erro ao alterar bloqueio da data.");
     }
   };
 
-  const handleCancelAdmin = (id: string, callback?: () => void) => {
-    if (
-      window.confirm(
-        "Deseja realmente CANCELAR este agendamento? Esta ação é irreversível e anula o protocolo."
-      )
-    ) {
-      cancelAppointment(id);
-      refreshData();
+  const handleBlockSlot = async (selectedDate: string, time: string) => {
+    const slotKey = `${selectedDate}_${time}`;
+    const previousSlots = [...state.blockedSlots];
+
+    setState(prev => ({
+      ...prev,
+      blockedSlots: prev.blockedSlots.includes(slotKey)
+        ? prev.blockedSlots.filter(s => s !== slotKey)
+        : [...prev.blockedSlots, slotKey]
+    }));
+
+    try {
+      await toggleBlockSlot(selectedDate, time);
+    } catch (err) {
+      setState(prev => ({ ...prev, blockedSlots: previousSlots }));
+      alert("Erro ao alterar bloqueio do horário.");
+    }
+  };
+
+  const handleBlockMonth = async (blockManagerMonth: string, isBlocked: boolean) => {
+    const actionText = isBlocked ? "LIBERAR" : "INABILITAR";
+    
+    if (!window.confirm(`Deseja realmente ${actionText} o mês de ${blockManagerMonth}?`)) return;
+
+    try {
+      setState(prev => ({ ...prev, isLoading: true }));
+      await toggleBlockMonth(blockManagerMonth);
+      await refreshData(); // Re-sincroniza tudo após alteração em massa
+    } catch (err) {
+      alert("Erro ao processar bloqueio mensal.");
+      setState(prev => ({ ...prev, isLoading: false }));
+    }
+  };
+
+  const handleCancelAdmin = async (id: string, callback?: () => void) => {
+    if (!window.confirm("Deseja realmente CANCELAR este agendamento?")) return;
+
+    try {
+      await cancelAppointment(id);
+      setState(prev => ({
+        ...prev,
+        appointments: prev.appointments.filter(app => app.id !== id)
+      }));
       if (callback) callback();
+    } catch (err) {
+      alert("Erro ao cancelar agendamento.");
     }
   };
 
-  const handleSaveEdit = (editingApp: Appointment, callback: () => void) => {
-    updateAppointment(editingApp);
-    refreshData();
-    alert("Agendamento atualizado com sucesso!");
-    callback();
+  const handleSaveEdit = async (editingApp: Appointment, callback: () => void) => {
+    try {
+      await updateAppointment(editingApp);
+      setState(prev => ({
+        ...prev,
+        appointments: prev.appointments.map(app => 
+          app.id === editingApp.id ? editingApp : app
+        )
+      }));
+      callback();
+    } catch (err) {
+      alert("Erro ao atualizar agendamento.");
+    }
   };
 
-  // --- Helper de Lógica de Negócio ---
-  const checkMonthBlocked = (blockManagerMonth: string) => {
+  // --- HELPERS ---
+
+  const checkMonthBlocked = useCallback((blockManagerMonth: string) => {
     try {
       const start = startOfMonth(parseISO(`${blockManagerMonth}-01`));
       const end = endOfMonth(start);
@@ -85,21 +154,16 @@ export const useAdminData = (isAuthenticated: boolean) => {
         .map((d) => format(d, "yyyy-MM-dd"));
 
       if (workDays.length === 0) return false;
-      return workDays.every((d) => blockedDates.includes(d));
-    } catch (e) {
+      return workDays.every((d) => state.blockedDates.includes(d));
+    } catch {
       return false;
     }
-  };
+  }, [state.blockedDates]);
 
   return {
-    // Dados
-    appointments,
-    blockedDates,
-    blockedSlots,
-    // Funções de controle
+    ...state, // Espalha appointments, blockedDates, blockedSlots, isLoading, error
     refreshData,
     checkMonthBlocked,
-    // Handlers de interface
     actions: {
       handleBlockDate,
       handleBlockSlot,

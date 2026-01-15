@@ -1,57 +1,95 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { Appointment } from '../types';
 import { 
-  getAppointmentByProtocol, 
   getAppointmentsByCpf, 
   cancelAppointment, 
-  rateAppointment 
+  rateAppointment,
+  getAllAppointments 
 } from '../services/scheduler';
 
+interface MyAppointmentsState {
+  foundApps: Appointment[];
+  error: string;
+  isLoading: boolean;
+  isActionLoading: boolean;
+}
+
 export const useMyAppointments = () => {
-  const [foundApps, setFoundApps] = useState<Appointment[]>([]);
-  const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [state, setState] = useState<MyAppointmentsState>({
+    foundApps: [],
+    error: '',
+    isLoading: false,
+    isActionLoading: false,
+  });
 
-  const searchAppointments = (value: string) => {
-    setError('');
-    setIsLoading(true);
-    setFoundApps([]);
+  const searchAppointments = useCallback(async (value: string) => {
+    const cleanValue = value.trim();
+    if (!cleanValue) return;
 
-    setTimeout(() => {
-      const cleanValue = value.trim();
-      if (!cleanValue) {
-        setIsLoading(false);
-        return;
-      }
+    setState(prev => ({ ...prev, isLoading: true, error: '', foundApps: [] }));
 
+    try {
       const isCpf = cleanValue.replace(/\D/g, '').length === 11;
-      
+      let results: Appointment[] = [];
+
       if (isCpf) {
-        const apps = getAppointmentsByCpf(cleanValue.replace(/\D/g, ''));
-        apps.length > 0 ? setFoundApps(apps) : setError('Nenhum agendamento encontrado para este CPF.');
+        results = await getAppointmentsByCpf(cleanValue);
+        if (results.length === 0) {
+          setState(prev => ({ ...prev, error: 'Nenhum agendamento encontrado para este CPF.', isLoading: false }));
+          return;
+        }
       } else {
-        const app = getAppointmentByProtocol(cleanValue);
-        app ? setFoundApps([app]) : setError('Protocolo não encontrado.');
+        const allApps = await getAllAppointments();
+        const app = allApps.find(a => a.protocol === cleanValue);
+        if (!app) {
+          setState(prev => ({ ...prev, error: 'Protocolo não encontrado.', isLoading: false }));
+          return;
+        }
+        results = [app];
       }
-      setIsLoading(false);
-    }, 600);
-  };
 
-  const handleCancel = (appId: string, searchValue: string) => {
-    if (window.confirm('Deseja realmente cancelar este agendamento?')) {
-      cancelAppointment(appId);
-      // Atualiza a lista após cancelar
-      searchAppointments(searchValue);
-      alert('Agendamento cancelado com sucesso.');
+      setState(prev => ({ ...prev, foundApps: results, isLoading: false }));
+    } catch (err) {
+      setState(prev => ({ 
+        ...prev, 
+        error: "Erro ao conectar com o servidor. Tente novamente.", 
+        isLoading: false 
+      }));
+    }
+  }, []);
+
+  const handleCancel = async (appId: string, searchValue: string) => {
+    if (!window.confirm('Deseja realmente cancelar este agendamento?')) return;
+
+    setState(prev => ({ ...prev, isActionLoading: true }));
+    try {
+      await cancelAppointment(appId);
+      await searchAppointments(searchValue);
+    } catch (err) {
+      alert('Erro ao cancelar agendamento. Tente novamente.');
+      setState(prev => ({ ...prev, isActionLoading: false }));
     }
   };
 
-  const handleRate = (appId: string, rating: number, feedback: string) => {
-    const updated = rateAppointment(appId, rating, feedback);
-    if (updated) {
-      setFoundApps(prev => prev.map(a => a.id === appId ? updated : a));
+  const handleRate = async (appId: string, rating: number, feedback: string) => {
+    setState(prev => ({ ...prev, isActionLoading: true }));
+    try {
+      const updated = await rateAppointment(appId, rating, feedback);
+      setState(prev => ({
+        ...prev,
+        isActionLoading: false,
+        foundApps: prev.foundApps.map(a => (a.id === appId ? updated : a)),
+      }));
+    } catch (err) {
+      alert('Erro ao enviar avaliação.');
+      setState(prev => ({ ...prev, isActionLoading: false }));
     }
   };
 
-  return { foundApps, error, isLoading, searchAppointments, handleCancel, handleRate };
+  return { 
+    ...state,
+    searchAppointments, 
+    handleCancel, 
+    handleRate 
+  };
 };
