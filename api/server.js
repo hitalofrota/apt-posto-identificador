@@ -37,7 +37,7 @@ app.post('/users/signup', async (req, res) => {
   }
 });
 
-app.use('/appointments', authMiddleware, appointmentRoutes);
+app.use('/appointments', appointmentRoutes);
 app.use('/blocks', authMiddleware, blockRoutes);
 
 const PORT = process.env.PORT || 3000;

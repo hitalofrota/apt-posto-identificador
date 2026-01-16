@@ -3,10 +3,28 @@ import { Search, AlertTriangle, Clock } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useMyAppointments } from '../hooks/useMyAppointments';
 import { AppointmentCard } from '../components/booking/AppointmentCard';
+import { formatCPF, isPossibleCPF } from '../utils/validators';
 
 const MyAppointment: React.FC = () => {
   const [searchValue, setSearchValue] = useState('');
-  const { foundApps, error, isLoading, searchAppointments, handleCancel, handleRate } = useMyAppointments();
+  const { 
+    foundApps, 
+    error, 
+    isLoading, 
+    searchAppointments, 
+    handleCancel, 
+    handleRate 
+  } = useMyAppointments();
+
+  const onInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    
+    if (isPossibleCPF(val)) {
+      setSearchValue(formatCPF(val));
+    } else {
+      setSearchValue(val);
+    }
+  };
 
   const onSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,17 +37,23 @@ const MyAppointment: React.FC = () => {
         <h2 className="text-3xl font-black text-ibicuitinga-navy mb-2 flex items-center gap-3 uppercase tracking-tighter">
           <Search className="text-ibicuitinga-royalBlue" size={32} /> Meus Agendamentos
         </h2>
-        <p className="text-gray-400 font-bold text-sm mb-8 uppercase tracking-widest">Consulte e gerencie seus protocolos</p>
+        <p className="text-gray-400 font-bold text-sm mb-8 uppercase tracking-widest">
+          Consulte e gerencie seus protocolos
+        </p>
         
         <form onSubmit={onSearchSubmit} className="relative z-10 flex flex-col sm:flex-row gap-3">
           <input 
-            type="text" placeholder="Protocolo ou CPF" 
-            className="flex-1 bg-gray-50 text-ibicuitinga-navy font-bold rounded-2xl border-2 border-gray-100 p-5 focus:border-ibicuitinga-royalBlue outline-none"
-            value={searchValue} onChange={(e) => setSearchValue(e.target.value)}
+            type="text" 
+            placeholder="Protocolo ou CPF" 
+            className="flex-1 bg-gray-50 text-ibicuitinga-navy font-bold rounded-2xl border-2 border-gray-100 p-5 focus:border-ibicuitinga-royalBlue outline-none transition-all placeholder:text-gray-300"
+            value={searchValue} 
+            onChange={onInputChange}
+            maxLength={20}
           />
           <button 
-            type="submit" disabled={isLoading}
-            className="bg-ibicuitinga-navy text-white px-10 py-5 rounded-2xl font-black uppercase text-xs hover:bg-ibicuitinga-royalBlue shadow-xl active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2"
+            type="submit" 
+            disabled={isLoading || !searchValue.trim()}
+            className="bg-ibicuitinga-navy text-white px-10 py-5 rounded-2xl font-black uppercase text-xs hover:bg-ibicuitinga-royalBlue shadow-xl active:scale-95 disabled:opacity-50 disabled:active:scale-100 transition-all flex items-center justify-center gap-2"
           >
             {isLoading ? <Clock className="animate-spin" size={18} /> : 'Buscar'}
           </button>
@@ -43,8 +67,10 @@ const MyAppointment: React.FC = () => {
       </div>
 
       {foundApps.length > 0 && (
-        <div className="space-y-8">
-          <p className="text-center text-[10px] font-black text-gray-400 uppercase tracking-widest">{foundApps.length} resultado(s) encontrado(s)</p>
+        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <p className="text-center text-[10px] font-black text-gray-400 uppercase tracking-widest">
+            {foundApps.length} resultado(s) encontrado(s)
+          </p>
           {foundApps.map(app => (
             <AppointmentCard 
               key={app.id} 
@@ -57,7 +83,10 @@ const MyAppointment: React.FC = () => {
       )}
       
       <div className="text-center pt-8">
-        <Link to="/" className="text-ibicuitinga-royalBlue font-black uppercase text-[10px] tracking-widest hover:underline">
+        <Link 
+          to="/" 
+          className="text-ibicuitinga-royalBlue font-black uppercase text-[10px] tracking-widest hover:underline transition-all"
+        >
           Voltar ao Início
         </Link>
       </div>
