@@ -4,7 +4,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { DashboardTab } from "../components/admin/DashboardTab";
 import { ReportsTab } from "../components/admin/ReportsTab";
 import { Lock, LogOut, LogIn, User, KeyRound, AlertTriangle, Loader2 } from "lucide-react";
-import axios from "axios";
+import api from "../services/api";
 
 const Admin: React.FC = () => {
   const { isAuthenticated, login, logout } = useAuth();
@@ -23,7 +23,7 @@ const Admin: React.FC = () => {
     setLoginError(false);
 
     try {
-      const response = await axios.post("http://localhost:3000/login", {
+      const response = await api.post("/login", {
         username: usernameInput,
         password: passwordInput,
       });
