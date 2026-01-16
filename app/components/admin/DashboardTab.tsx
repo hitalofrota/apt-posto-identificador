@@ -21,7 +21,6 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
   appointments, 
   setDrilldownType 
 }) => {
-  // --- Lógica de Cálculos (Copiada do seu Admin original) ---
   const totalApps = appointments.length;
   const activeApps = appointments.filter(
     (a) => a.status === "scheduled"
@@ -33,7 +32,6 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
 
   const dataByService = SERVICES.map((s) => {
     let name: string = s.name;
-    // Mapeamento de nomes curtos para o gráfico
     if (s.id === "1") name = "Alistamento";
     else if (s.id === "2") name = "CDI";
     else if (s.id === "4") name = "CIN";

@@ -8,7 +8,6 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
   const location = useLocation();
 
-  // URL pública do brasão de Ibicuitinga para garantir exibição imediata
   const brasaoUrl = "https://upload.wikimedia.org/wikipedia/commons/b/b3/Bras%C3%A3o_de_Ibicuitinga.png";
 
   return (
@@ -23,7 +22,6 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                 alt="Brasão de Ibicuitinga" 
                 className="h-12 w-auto"
                 onError={(e) => {
-                  // Fallback para o ícone de escudo caso a imagem falhe
                   (e.target as any).style.display = 'none';
                 }}
               />

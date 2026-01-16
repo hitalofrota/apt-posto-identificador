@@ -9,10 +9,8 @@ import {
   SLOT_DURATION_MINUTES,
 } from "../constants";
 
-// Re-exportando os objetos da API para uso organizado
 export { appointmentsApi, blocksApi };
 
-// Exportações individuais para compatibilidade com os hooks existentes
 export const getAllAppointments = appointmentsApi.getAll;
 export const getAppointmentsByCpf = appointmentsApi.getByCpf;
 export const createAppointment = appointmentsApi.create;

@@ -13,14 +13,13 @@ export const SuccessStep: React.FC<SuccessStepProps> = ({ appointment }) => {
   const [feedback, setFeedback] = useState("");
   const [hoverRating, setHoverRating] = useState(0);
   const [ratingSubmitted, setRatingSubmitted] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false); // Estado para o loading do botão
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleRatingSubmit = async () => {
     if (rating === 0) return;
     
     setIsSubmitting(true);
     try {
-      // Agora aguardamos a chamada de API para o backend
       await rateAppointment(appointment.id, rating, feedback);
       setRatingSubmitted(true);
     } catch (error) {

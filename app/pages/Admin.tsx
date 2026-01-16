@@ -99,7 +99,6 @@ const Admin: React.FC = () => {
     );
   }
 
-  // --- Layout Administrativo (Quando Logado) ---
   return (
     <div className="space-y-8 pb-10">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">

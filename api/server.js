@@ -1,14 +1,14 @@
 import express from 'express';
 import cors from 'cors';
-import bcrypt from 'bcryptjs'; // ADICIONADO
-import { PrismaClient } from '@prisma/client'; // ADICIONADO
+import bcrypt from 'bcryptjs';
+import { PrismaClient } from '@prisma/client';
 import appointmentRoutes from './src/routes/appointmentRoutes.js';
 import blockRoutes from './src/routes/blockRoutes.js';
 import { authController } from './src/controllers/authController.js';
 import { userService } from './src/services/userService.js';
 import { authMiddleware } from './src/middlewares/auth.js';
 
-const prisma = new PrismaClient(); // ADICIONADO
+const prisma = new PrismaClient();
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -37,7 +37,6 @@ app.post('/users/signup', async (req, res) => {
   }
 });
 
-// Rotas protegidas pelo middleware
 app.use('/appointments', authMiddleware, appointmentRoutes);
 app.use('/blocks', authMiddleware, blockRoutes);
 

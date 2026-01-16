@@ -11,7 +11,6 @@ interface ReportsTabProps {
 }
 
 export const ReportsTab: React.FC<ReportsTabProps> = ({ appointments }) => {
-  // --- Estados de Filtro (Isolados aqui) ---
   const [reportDate, setReportDate] = useState("");
   const [reportMonthPart, setReportMonthPart] = useState("");
   const [reportYearPart, setReportYearPart] = useState(
@@ -33,7 +32,6 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({ appointments }) => {
     (currentYear - 2 + i).toString()
   );
 
-  // --- Função de PDF (Sua lógica original organizada) ---
   const generatePDF = () => {
     const doc = new jsPDF();
     doc.setFontSize(18);

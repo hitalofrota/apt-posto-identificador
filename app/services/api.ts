@@ -2,7 +2,6 @@ import axios from "axios";
 import { Appointment } from "../types";
 
 const api = axios.create({
-  // Garante que a URL aponte para o seu servidor Node.js
   baseURL: import.meta.env.VITE_API_URL || "http://localhost:3000",
 });
 api.interceptors.request.use((config) => {

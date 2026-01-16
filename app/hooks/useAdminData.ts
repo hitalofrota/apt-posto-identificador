@@ -106,7 +106,7 @@ export const useAdminData = (isAuthenticated: boolean) => {
     try {
       setState(prev => ({ ...prev, isLoading: true }));
       await toggleBlockMonth(blockManagerMonth);
-      await refreshData(); // Re-sincroniza tudo após alteração em massa
+      await refreshData();
     } catch (err) {
       alert("Erro ao processar bloqueio mensal.");
       setState(prev => ({ ...prev, isLoading: false }));
@@ -143,8 +143,6 @@ export const useAdminData = (isAuthenticated: boolean) => {
     }
   };
 
-  // --- HELPERS ---
-
   const checkMonthBlocked = useCallback((blockManagerMonth: string) => {
     try {
       const start = startOfMonth(parseISO(`${blockManagerMonth}-01`));
@@ -161,7 +159,7 @@ export const useAdminData = (isAuthenticated: boolean) => {
   }, [state.blockedDates]);
 
   return {
-    ...state, // Espalha appointments, blockedDates, blockedSlots, isLoading, error
+    ...state,
     refreshData,
     checkMonthBlocked,
     actions: {
