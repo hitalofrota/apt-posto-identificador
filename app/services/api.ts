@@ -2,7 +2,20 @@ import axios from "axios";
 import { Appointment } from "../types";
 
 const api = axios.create({
+  // Garante que a URL aponte para o seu servidor Node.js
   baseURL: import.meta.env.VITE_API_URL || "http://localhost:3000",
+});
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem("@AdminToken");
+  
+  if (token && config.headers) {
+
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  
+  return config;
+}, (error) => {
+  return Promise.reject(error);
 });
 
 export const appointmentsApi = {
@@ -29,3 +42,5 @@ export const blocksApi = {
   toggleSlot: (date: string, time: string) => api.post("/blocks/slot", { date, time }),
   toggleMonth: (month: string) => api.post("/blocks/month", { month }),
 };
+
+export default api;

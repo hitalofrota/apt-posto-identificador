@@ -51,3 +51,11 @@ model BlockedSlot {
 
   @@unique([date, time]) // Garante que não existam dois bloqueios iguais
 }
+
+model User {
+  id        String   @id @default(uuid())
+  username  String   @unique
+  password  String   // Aqui ficará a senha criptografada
+  name      String
+  createdAt DateTime @default(now())
+}
