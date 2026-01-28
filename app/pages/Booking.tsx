@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import { useBooking } from "../hooks/useBooking";
 import { ServiceStep } from "../components/booking/ServiceStep";
 import { DateTimeStep } from "../components/booking/DateTimeStep";
@@ -9,6 +10,7 @@ import { Check, X, AlertCircle } from "lucide-react";
 const STEPS = ["Serviço", "Data & Hora", "Dados", "Sucesso"];
 
 const Booking: React.FC = () => {
+  const navigate = useNavigate();
   const {
     currentStep,
     selectedService,
@@ -27,6 +29,14 @@ const Booking: React.FC = () => {
     showDoubleBookingAlert,
     setShowDoubleBookingAlert
   } = useBooking();
+
+  const handleBackButton = () => {
+    if (currentStep === 0) {
+      navigate("/");
+    } else {
+      handleBack();
+    }
+  };
 
   return (
     <div className="max-w-2xl mx-auto pb-10">
@@ -89,7 +99,18 @@ const Booking: React.FC = () => {
         )}
       </div>
 
-      {/* MODAL DE ALERTA DE AGENDAMENTO DUPLICADO */}
+      {/* Botão Voltar */}
+      {currentStep < 2 && (
+        <div className="mt-8">
+          <button
+            onClick={handleBackButton}
+            className="w-full py-4 rounded-2xl font-black text-gray-400 uppercase tracking-widest hover:bg-gray-50 transition-all border-2 border-gray-100"
+          >
+            Voltar
+          </button>
+        </div>
+      )}
+
       {showDoubleBookingAlert && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-ibicuitinga-navy/90 backdrop-blur-md p-6">
           <div className="bg-white rounded-[3rem] shadow-2xl max-w-md w-full p-10 text-center space-y-6 animate-scale-in relative border-t-8 border-ibicuitinga-orange">
