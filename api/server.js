@@ -38,7 +38,7 @@ app.post('/users/signup', async (req, res) => {
 });
 
 app.use('/appointments', appointmentRoutes);
-app.use('/blocks', authMiddleware, blockRoutes);
+app.use('/blocks', blockRoutes);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`🚀 Back-end persistente na porta ${PORT}`));

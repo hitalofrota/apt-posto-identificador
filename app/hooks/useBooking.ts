@@ -81,28 +81,40 @@ export const useBooking = () => {
 
     try {
       const dateStr = format(selectedDate, "yyyy-MM-dd");
+      
+      // Limpeza de máscaras para salvar apenas números
+      const cleanCpf = citizenData.cpf.replace(/\D/g, "");
+      const cleanPhone = citizenData.phone.replace(/\D/g, "");
 
-      if (citizenData.cpf) {
-        const alreadyHasBooking = await hasActiveAppointmentOnDay(citizenData.cpf, dateStr);
+      if (cleanCpf) {
+        const alreadyHasBooking = await hasActiveAppointmentOnDay(cleanCpf, dateStr);
         if (alreadyHasBooking) {
           setUiState(prev => ({ ...prev, showDoubleBookingAlert: true, isSubmitting: false }));
           return;
         }
       }
 
-      const appointment = await createAppointment({
-        serviceId: selectedService.id,
+      const payload = {
+        serviceId: String(selectedService.id), 
         serviceName: selectedService.name,
         date: dateStr,
         time: selectedTime,
-        citizen: citizenData,
-      });
+        // Campos "aplanados" exigidos pelo seu Schema Prisma
+        citizenName: citizenData.name,
+        citizenHasCpf: citizenData.hasCpf,
+        citizenCpf: cleanCpf,
+        citizenPhone: cleanPhone,
+        citizenEmail: citizenData.email || null,
+        status: "scheduled" as const
+      };
+
+      const appointment = await createAppointment(payload);
 
       setUiState(prev => ({ ...prev, confirmedAppointment: appointment }));
       setCurrentStep(3);
-    } catch (err) {
-      console.error("Erro ao processar agendamento:", err);
-      alert("Não foi possível finalizar seu agendamento. Tente novamente em instantes.");
+    } catch (err: any) {
+      console.error("Erro detalhado no agendamento:", err.response?.data || err.message);
+      alert("Erro ao realizar agendamento. Verifique os dados no console.");
     } finally {
       setUiState(prev => ({ ...prev, isSubmitting: false }));
     }

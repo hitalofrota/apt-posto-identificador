@@ -5,7 +5,9 @@ const prisma = new PrismaClient();
 
 export const appointmentService = {
   async getAll() {
-    return await prisma.appointment.findMany({ orderBy: { date: 'desc' } });
+    return await prisma.appointment.findMany({ 
+      orderBy: { date: 'desc' } 
+    });
   },
 
   async getByCpf(cpf) {
@@ -17,32 +19,54 @@ export const appointmentService = {
   },
 
   async create(data) {
-    const { date, time, citizen } = data;
+    const { 
+      date, 
+      time, 
+      citizenName, 
+      citizenPhone, 
+      citizenEmail, 
+      citizenCpf, 
+      citizenHasCpf,
+      serviceId,
+      serviceName,
+      ...rest 
+    } = data;
+
     return await prisma.appointment.create({
       data: {
-        ...data,
+        ...rest,
+        serviceId: String(serviceId),
+        serviceName,
+        date,
+        time,
         protocol: generateProtocol(date, time),
-        citizenName: citizen.name,
-        citizenPhone: citizen.phone,
-        citizenEmail: citizen.email,
-        citizenCpf: citizen.cpf?.replace(/\D/g, ""),
-        citizenHasCpf: !!citizen.hasCpf,
+        citizenName,
+        citizenPhone,
+        citizenEmail: citizenEmail || null,
+        citizenCpf: citizenCpf?.replace(/\D/g, ""),
+        citizenHasCpf: !!citizenHasCpf,
         status: 'scheduled'
       }
     });
   },
 
-  async update(id, { citizen, ...rest }) {
+  async update(id, data) {
+    const { 
+      citizenName, 
+      citizenPhone, 
+      citizenEmail, 
+      citizenCpf, 
+      ...rest 
+    } = data;
+
     return await prisma.appointment.update({
       where: { id },
       data: {
         ...rest,
-        ...(citizen && {
-          citizenName: citizen.name,
-          citizenPhone: citizen.phone,
-          citizenEmail: citizen.email,
-          citizenCpf: citizen.cpf?.replace(/\D/g, "")
-        })
+        ...(citizenName && { citizenName }),
+        ...(citizenPhone && { citizenPhone }),
+        ...(citizenEmail && { citizenEmail }),
+        ...(citizenCpf && { citizenCpf: citizenCpf.replace(/\D/g, "") })
       }
     });
   }

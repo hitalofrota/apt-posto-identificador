@@ -15,6 +15,7 @@ export interface Citizen {
   id: string;
   name: string;
   hasCpf: boolean;
+  cep?: string;
   cpf?: string;
   phone: string;
   email?: string;

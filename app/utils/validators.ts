@@ -38,3 +38,13 @@ export const isPossibleCPF = (value: string) => {
   const clean = value.replace(/\D/g, "");
   return /^\d/.test(value) && clean.length <= 11;
 };
+
+export const formatCEP = (value: string): string => {
+  const cleaned = value.replace(/\D/g, '');
+  const match = cleaned.match(/^(\d{0,5})(\d{0,3})$/);
+  if (!match) return value;
+  if (match[2]) {
+    return `${match[1]}-${match[2]}`;
+  }
+  return match[1];
+};

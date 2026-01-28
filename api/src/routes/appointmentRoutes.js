@@ -8,10 +8,10 @@ const router = Router();
 router.get('/citizen/:cpf', appointmentController.listByCpf);
 router.post('/', appointmentController.create);
 router.patch('/:id/rate', appointmentController.rate);
+router.get('/', appointmentController.list);
 
 // --- ROTAS PRIVADAS
-router.get('/', authMiddleware, appointmentController.list);
-router.put('/:id', authMiddleware, appointmentController.update);
-router.delete('/:id', authMiddleware, appointmentController.cancel);
+router.put('/:id', appointmentController.update);
+router.delete('/:id', appointmentController.cancel);
 
 export default router;
