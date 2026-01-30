@@ -27,6 +27,7 @@ model Appointment {
   citizenName       String
   citizenHasCpf     Boolean           @default(true)
   citizenCpf        String?
+  citizenCep        String?
   citizenPhone      String
   citizenEmail      String?
   

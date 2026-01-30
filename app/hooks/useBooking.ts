@@ -17,8 +17,20 @@ const validateCitizenForm = (data: Citizen) => {
     errors.phone = "Informe um WhatsApp válido com DDD.";
   }
 
-  if (data.hasCpf && data.cpf && !isValidCPF(data.cpf)) {
-    errors.cpf = "CPF Inválido.";
+  if (data.hasCpf) {
+    if (!data.cpf) {
+      errors.cpf = "O CPF é obrigatório.";
+    } else if (!isValidCPF(data.cpf)) {
+      errors.cpf = "CPF Inválido.";
+    }
+  }
+
+  // Validação de CEP Obrigatório
+  const cleanCep = data.cep?.replace(/\D/g, "") || "";
+  if (!cleanCep) {
+    errors.cep = "O CEP é obrigatório.";
+  } else if (cleanCep.length !== 8) {
+    errors.cep = "Informe um CEP válido.";
   }
 
   return errors;
@@ -36,6 +48,7 @@ export const useBooking = () => {
     cpf: "",
     phone: "",
     email: "",
+    cep: "",
   });
 
   const [uiState, setUiState] = useState({
@@ -53,19 +66,6 @@ export const useBooking = () => {
   const handleNext = () => setCurrentStep((prev) => prev + 1);
   const handleBack = () => setCurrentStep((prev) => prev - 1);
 
-  const resetBooking = () => {
-    setCurrentStep(0);
-    setSelectedService(null);
-    setSelectedDate(null);
-    setSelectedTime(null);
-    setUiState({
-      formErrors: {},
-      isSubmitting: false,
-      showDoubleBookingAlert: false,
-      confirmedAppointment: null,
-    });
-  };
-
   const validateAndSubmit = async (lgpdConsent: boolean) => {
     const errors = validateCitizenForm(citizenData);
     if (Object.keys(errors).length > 0) {
@@ -73,18 +73,15 @@ export const useBooking = () => {
       return;
     }
 
-    if (!lgpdConsent || !selectedService || !selectedDate || !selectedTime) {
-      return;
-    }
+    if (!lgpdConsent || !selectedService || !selectedDate || !selectedTime) return;
 
     setUiState(prev => ({ ...prev, isSubmitting: true, formErrors: {} }));
 
     try {
       const dateStr = format(selectedDate, "yyyy-MM-dd");
-      
-      // Limpeza de máscaras para salvar apenas números
-      const cleanCpf = citizenData.cpf.replace(/\D/g, "");
+      const cleanCpf = citizenData.hasCpf ? citizenData.cpf?.replace(/\D/g, "") : null;
       const cleanPhone = citizenData.phone.replace(/\D/g, "");
+      const cleanCep = citizenData.cep?.replace(/\D/g, "");
 
       if (cleanCpf) {
         const alreadyHasBooking = await hasActiveAppointmentOnDay(cleanCpf, dateStr);
@@ -99,22 +96,21 @@ export const useBooking = () => {
         serviceName: selectedService.name,
         date: dateStr,
         time: selectedTime,
-        // Campos "aplanados" exigidos pelo seu Schema Prisma
         citizenName: citizenData.name,
         citizenHasCpf: citizenData.hasCpf,
         citizenCpf: cleanCpf,
         citizenPhone: cleanPhone,
         citizenEmail: citizenData.email || null,
+        citizenCep: cleanCep,
         status: "scheduled" as const
       };
 
       const appointment = await createAppointment(payload);
-
       setUiState(prev => ({ ...prev, confirmedAppointment: appointment }));
       setCurrentStep(3);
     } catch (err: any) {
-      console.error("Erro detalhado no agendamento:", err.response?.data || err.message);
-      alert("Erro ao realizar agendamento. Verifique os dados no console.");
+      const backendError = err.response?.data?.error || "Erro ao realizar agendamento.";
+      alert(backendError);
     } finally {
       setUiState(prev => ({ ...prev, isSubmitting: false }));
     }
@@ -127,16 +123,25 @@ export const useBooking = () => {
     selectedTime,
     citizenData,
     ...uiState,
-    
     setSelectedDate,
     setSelectedTime,
     setCitizenData,
     setShowDoubleBookingAlert: (val: boolean) => setUiState(prev => ({ ...prev, showDoubleBookingAlert: val })),
-
     handleServiceSelect,
     handleNext,
     handleBack,
     validateAndSubmit,
-    resetBooking
+    resetBooking: () => {
+      setCurrentStep(0);
+      setSelectedService(null);
+      setSelectedDate(null);
+      setSelectedTime(null);
+      setUiState({
+        formErrors: {},
+        isSubmitting: false,
+        showDoubleBookingAlert: false,
+        confirmedAppointment: null,
+      });
+    }
   };
 };

@@ -129,6 +129,7 @@ export const DataStep: React.FC<Props> = ({
               value={data.cep || ''}
               onChange={handleInputChange}
               placeholder="00000-000"
+              maxLength={9}
               className={`w-full bg-gray-50 border-2 rounded-2xl p-4 focus:border-ibicuitinga-royalBlue outline-none font-bold text-ibicuitinga-navy transition-colors ${formErrors.cep ? "border-red-500 bg-red-50/30" : "border-gray-100"}`}
             />
             {formErrors.cep && (

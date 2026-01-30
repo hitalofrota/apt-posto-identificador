@@ -40,9 +40,10 @@ export const isPossibleCPF = (value: string) => {
 };
 
 export const formatCEP = (value: string): string => {
-  const cleaned = value.replace(/\D/g, '');
+  const cleaned = value.replace(/\D/g, '').slice(0, 8);
   const match = cleaned.match(/^(\d{0,5})(\d{0,3})$/);
-  if (!match) return value;
+  
+  if (!match) return cleaned;
   if (match[2]) {
     return `${match[1]}-${match[2]}`;
   }

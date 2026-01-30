@@ -25,7 +25,19 @@ export const appointmentController = {
       const newApp = await appointmentService.create(req.body);
       res.status(201).json(mapAppointment(newApp));
     } catch (e) {
-      res.status(400).json({ error: "Erro ao criar agendamento" });
+      // Captura o erro específico da regra de negócio de vizinhos
+      if (e.message === "LIMITE_VIZINHO_ATINGIDO") {
+        return res.status(400).json({ 
+          error: "Limite de agendamentos atingido. Usuários de cidades vizinhas podem realizar no máximo 2 agendamentos ativos." 
+        });
+      }
+      
+      if (e.message === "CEP_INVALIDO") {
+        return res.status(400).json({ error: "O CEP é obrigatório e deve ser válido." });
+      }
+
+      console.error("[CREATE APPOINTMENT ERROR]:", e);
+      res.status(400).json({ error: "Erro ao criar agendamento. Verifique os dados fornecidos." });
     }
   },
 

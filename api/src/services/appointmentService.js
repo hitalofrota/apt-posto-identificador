@@ -3,6 +3,14 @@ import { generateProtocol } from '../utils/mapper.js';
 
 const prisma = new PrismaClient();
 
+// Função auxiliar para verificar se o CEP pertence a Ibicuitinga (62955-000 a 62959-999)
+const isLocalCity = (cep) => {
+  if (!cep) return false;
+  const cleanCep = cep.replace(/\D/g, "");
+  const numCep = parseInt(cleanCep);
+  return numCep >= 62955000 && numCep <= 62959999;
+};
+
 export const appointmentService = {
   async getAll() {
     return await prisma.appointment.findMany({ 
@@ -27,10 +35,39 @@ export const appointmentService = {
       citizenEmail, 
       citizenCpf, 
       citizenHasCpf,
+      citizenCep, 
       serviceId,
       serviceName,
       ...rest 
     } = data;
+
+    // --- VALIDAÇÃO DE SEGURANÇA: CEP OBRIGATÓRIO ---
+    const cleanCep = citizenCep?.replace(/\D/g, "");
+    if (!cleanCep || cleanCep.length !== 8) {
+      throw new Error("CEP_INVALIDO");
+    }
+
+    const cleanCpf = citizenCpf?.replace(/\D/g, "");
+    const cleanPhone = citizenPhone?.replace(/\D/g, "");
+
+    // --- REGRA DE NEGÓCIO: LIMITE PARA CIDADES VIZINHAS ---
+    if (!isLocalCity(cleanCep)) {
+      // Define o critério de busca: CPF se existir, caso contrário Nome + Telefone
+      const identityFilter = cleanCpf 
+        ? { citizenCpf: cleanCpf } 
+        : { citizenName: citizenName, citizenPhone: cleanPhone };
+
+      const activeAppointmentsCount = await prisma.appointment.count({
+        where: {
+          ...identityFilter,
+          status: 'scheduled'
+        }
+      });
+
+      if (activeAppointmentsCount >= 2) {
+        throw new Error("LIMITE_VIZINHO_ATINGIDO");
+      }
+    }
 
     return await prisma.appointment.create({
       data: {
@@ -41,10 +78,11 @@ export const appointmentService = {
         time,
         protocol: generateProtocol(date, time),
         citizenName,
-        citizenPhone,
+        citizenPhone: cleanPhone,
         citizenEmail: citizenEmail || null,
-        citizenCpf: citizenCpf?.replace(/\D/g, ""),
+        citizenCpf: cleanCpf || null,
         citizenHasCpf: !!citizenHasCpf,
+        citizenCep: cleanCep,
         status: 'scheduled'
       }
     });
@@ -56,6 +94,7 @@ export const appointmentService = {
       citizenPhone, 
       citizenEmail, 
       citizenCpf, 
+      citizenCep,
       ...rest 
     } = data;
 
@@ -64,9 +103,10 @@ export const appointmentService = {
       data: {
         ...rest,
         ...(citizenName && { citizenName }),
-        ...(citizenPhone && { citizenPhone }),
+        ...(citizenPhone && { citizenPhone: citizenPhone.replace(/\D/g, "") }),
         ...(citizenEmail && { citizenEmail }),
-        ...(citizenCpf && { citizenCpf: citizenCpf.replace(/\D/g, "") })
+        ...(citizenCpf && { citizenCpf: citizenCpf.replace(/\D/g, "") }),
+        ...(citizenCep && { citizenCep: citizenCep.replace(/\D/g, "") })
       }
     });
   }
