@@ -9,16 +9,16 @@ const Home: React.FC = () => {
 
   const documentSections = [
     { 
+      title: "1ª e 2ª via da Carteira de Identidade Nacional", 
+      docs: ["Certidão de Nascimento ou Casamento (Original e Xerox)","CPF", "Carteira de Identidade Antiga (Se possuir)", "Comprovante de Residência", "Caso possua problema de saúde, apresentar laudo médico","Menores de 16 anos devem comparecer com responsável legal (1º grau), com RG e CPF"] 
+    },
+    { 
       title: "Alistamento Militar", 
-      docs: ["Certidão de Nascimento", "Comprovante de Passaporte", "Carteira de Identidade (RG)", "CPF"] 
+      docs: ["Certidão de Nascimento ou Casamento (Original)", "CPF", "Carteira de Identidade (RG - Original)", "Comprovante de Residência"] 
     },
     { 
-      title: "1ª e 2ª via do CDI", 
-      docs: ["Documento de Identidade (RG)", "CPF", "Certificado de Alistamento Militar", "Comprovante de Quitação Eleitoral"] 
-    },
-    { 
-      title: "1ª e 2ª via da CIN", 
-      docs: ["Certidão de Nascimento ou Casamento", "CPF", "Comprovante de Residência", "Foto 3x4 recente"] 
+      title: "1ª e 2ª via do Certificado de Dispensa de Incorporação", 
+      docs: ["Certidão de Nascimento ou Casamento (Original)", "CPF", "Carteira de Identidade (RG - Original)", "Comprovante de Residência"] 
     },
     { 
       title: "Outros Serviços", 
