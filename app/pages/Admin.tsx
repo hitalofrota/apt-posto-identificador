@@ -3,6 +3,7 @@ import { useAdminData } from "../hooks/useAdminData";
 import { useAuth } from "../contexts/AuthContext";
 import { DashboardTab } from "../components/admin/DashboardTab";
 import { ReportsTab } from "../components/admin/ReportsTab";
+import { FeedbackTab } from "../components/admin/FeedbackTab";
 import { 
   Lock, 
   LogOut, 
@@ -23,13 +24,11 @@ const Admin: React.FC = () => {
   const [loginError, setLoginError] = useState(false);
   const [activeTab, setActiveTab] = useState<"dashboard" | "schedule" | "feedback" | "reports">("dashboard");
 
-  // Estados de Filtro mantidos aqui para controle global
   const [selectedMonth, setSelectedMonth] = useState<string>(new Date().toISOString().substring(0, 7));
   const [selectedService, setSelectedService] = useState<string>("all");
 
   const { appointments } = useAdminData(isAuthenticated);
 
-  // Lógica de filtragem aplicada aos dados que descem para as abas
   const filteredAppointments = useMemo(() => {
     return appointments.filter(app => {
       const appMonth = app.date.substring(0, 7);
@@ -132,7 +131,6 @@ const Admin: React.FC = () => {
 
   return (
     <div className="space-y-8 pb-10">
-      {/* Header simplificado sem a barra de filtros flutuante */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
         <div className="flex items-center gap-4">
           <div className="p-3 bg-ibicuitinga-navy text-ibicuitinga-yellow rounded-2xl shadow-xl">
@@ -167,6 +165,7 @@ const Admin: React.FC = () => {
       </div>
 
       <div className="transition-all duration-500">
+        {/* Aba de Início: Recebe dados filtrados e controles de filtro */}
         {activeTab === "dashboard" && (
           <DashboardTab   
             appointments={filteredAppointments} 
@@ -180,11 +179,18 @@ const Admin: React.FC = () => {
           />
         )}
         
+        {/* Aba de Relatórios */}
         {activeTab === "reports" && (
           <ReportsTab appointments={filteredAppointments} />
         )}
+
+        {/* Aba de Feedbacks: Mostra as avaliações do cidadão */}
+        {activeTab === "feedback" && (
+          <FeedbackTab appointments={filteredAppointments} />
+        )}
         
-        {(activeTab === "feedback" || activeTab === "schedule") && (
+        {/* Aba de Agenda: Módulo em desenvolvimento */}
+        {activeTab === "schedule" && (
             <div className="p-20 text-center bg-white rounded-[2.5rem] border-2 border-dashed border-gray-100">
               <p className="text-gray-300 font-black uppercase tracking-widest">Módulo em Desenvolvimento</p>
             </div>
