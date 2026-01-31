@@ -8,6 +8,7 @@ export enum ServiceType {
 export interface Service {
   id: string;
   name: ServiceType;
+  description?: string;
   requiresDescription: boolean;
 }
 

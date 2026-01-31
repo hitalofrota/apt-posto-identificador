@@ -3,7 +3,12 @@ import { Service, ServiceType } from './types';
 export const SERVICES: Service[] = [
   { id: '4', name: ServiceType.CIN, requiresDescription: false },
   { id: '1', name: ServiceType.ALISTAMENTO, requiresDescription: false },
-  { id: '2', name: ServiceType.CDI, requiresDescription: false },
+  { 
+    id: '2', 
+    name: ServiceType.CDI, 
+    description: 'Quitação com o serviço militar',
+    requiresDescription: false 
+  },
   { id: '6', name: ServiceType.OUTROS, requiresDescription: true },
 ];
 

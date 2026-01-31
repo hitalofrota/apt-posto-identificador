@@ -20,9 +20,27 @@ export const ServiceStep: React.FC<Props> = ({ selectedService, onSelect }) => (
             : "border-white bg-white hover:border-ibicuitinga-skyBlue/30 shadow-sm"
         }`}
       >
-        <span className="font-black text-ibicuitinga-navy uppercase tracking-tight">{service.name}</span>
-        <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${selectedService?.id === service.id ? "bg-ibicuitinga-royalBlue border-ibicuitinga-royalBlue text-white" : "border-gray-200"}`}>
-          {selectedService?.id === service.id && <Check size={14} />}
+        <div className="flex flex-col gap-2">
+          <span className="font-black text-ibicuitinga-navy uppercase tracking-tight leading-tight">
+            {service.name}
+          </span>
+          
+          {/* Balão de descrição conforme a imagem 2 */}
+          {service.description && (
+            <div className="flex">
+              <span className="bg-white border border-gray-200 text-gray-500 text-[11px] px-3 py-1.5 rounded-lg shadow-sm font-bold normal-case">
+                {service.description}
+              </span>
+            </div>
+          )}
+        </div>
+
+        <div className={`shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${
+          selectedService?.id === service.id 
+            ? "bg-ibicuitinga-royalBlue border-ibicuitinga-royalBlue text-white" 
+            : "border-gray-200"
+        }`}>
+          {selectedService?.id === service.id && <Check size={14} strokeWidth={3} />}
         </div>
       </button>
     ))}
