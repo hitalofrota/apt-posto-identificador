@@ -28,20 +28,11 @@ export const appointmentService = {
 
   async create(data) {
     const { 
-      date, 
-      time, 
-      citizenName, 
-      citizenPhone, 
-      citizenEmail, 
-      citizenCpf, 
-      citizenHasCpf,
-      citizenCep, 
-      serviceId,
-      serviceName,
-      ...rest 
+      date, time, citizenName, citizenPhone, citizenEmail, 
+      citizenCpf, citizenHasCpf, citizenCep, serviceId, serviceName, ...rest 
     } = data;
 
-    // --- VALIDAÇÃO DE SEGURANÇA: CEP OBRIGATÓRIO ---
+    // CEP Obrigatório
     const cleanCep = citizenCep?.replace(/\D/g, "");
     if (!cleanCep || cleanCep.length !== 8) {
       throw new Error("CEP_INVALIDO");
@@ -50,21 +41,22 @@ export const appointmentService = {
     const cleanCpf = citizenCpf?.replace(/\D/g, "");
     const cleanPhone = citizenPhone?.replace(/\D/g, "");
 
-    // --- REGRA DE NEGÓCIO: LIMITE PARA CIDADES VIZINHAS ---
+    // REGRA DE NEGÓCIO: Bloqueia apenas se for MAIOR que 2 vagas para vizinhos no dia
     if (!isLocalCity(cleanCep)) {
-      // Define o critério de busca: CPF se existir, caso contrário Nome + Telefone
-      const identityFilter = cleanCpf 
-        ? { citizenCpf: cleanCpf } 
-        : { citizenName: citizenName, citizenPhone: cleanPhone };
-
       const activeAppointmentsCount = await prisma.appointment.count({
         where: {
-          ...identityFilter,
-          status: 'scheduled'
+          date: date, // Limitação por dia específico
+          status: 'scheduled',
+          NOT: {
+            citizenCep: {
+              startsWith: '6295', // Filtra agendamentos locais
+            }
+          }
         }
       });
 
-      if (activeAppointmentsCount >= 2) {
+      // Se já houver 2 pessoas de fora, o próximo (o 3º) será barrado
+      if (activeAppointmentsCount >= 2) { 
         throw new Error("LIMITE_VIZINHO_ATINGIDO");
       }
     }
@@ -89,15 +81,7 @@ export const appointmentService = {
   },
 
   async update(id, data) {
-    const { 
-      citizenName, 
-      citizenPhone, 
-      citizenEmail, 
-      citizenCpf, 
-      citizenCep,
-      ...rest 
-    } = data;
-
+    const { citizenName, citizenPhone, citizenEmail, citizenCpf, citizenCep, ...rest } = data;
     return await prisma.appointment.update({
       where: { id },
       data: {
