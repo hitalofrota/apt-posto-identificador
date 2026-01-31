@@ -1,146 +1,228 @@
-import React from "react";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  Cell,
+import React, { useMemo } from "react";
+import { 
+  Users, 
+  CalendarDays, 
+  Clock, 
+  Star, 
+  Calendar, 
+  Filter, 
+  RefreshCcw,
+  TrendingUp
+} from "lucide-react";
+import { 
+  BarChart, 
+  Bar, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  ResponsiveContainer, 
+  Cell 
 } from "recharts";
-import { Appointment } from "../../types";
-import { SERVICES } from "../../constants";
-import { format } from "date-fns";
 
-interface DashboardTabProps {
-  appointments: Appointment[];
-  setDrilldownType: (type: "total" | "today" | "active" | null) => void;
+interface DashboardProps {
+  appointments: any[];
+  selectedMonth: string;
+  setSelectedMonth: (val: string) => void;
+  selectedService: string;
+  setSelectedService: (val: string) => void;
+  serviceOptions: string[];
+  resetFilters: () => void;
+  setDrilldownType: (type: string | null) => void;
 }
 
-export const DashboardTab: React.FC<DashboardTabProps> = ({ 
-  appointments, 
-  setDrilldownType 
+export const DashboardTab: React.FC<DashboardProps> = ({
+  appointments,
+  selectedMonth,
+  setSelectedMonth,
+  selectedService,
+  setSelectedService,
+  serviceOptions,
+  resetFilters,
+  setDrilldownType
 }) => {
-  const totalApps = appointments.length;
-  const activeApps = appointments.filter(
-    (a) => a.status === "scheduled"
-  ).length;
-  const todayApps = appointments.filter(
-    (a) =>
-      a.date === format(new Date(), "yyyy-MM-dd") && a.status === "scheduled"
-  ).length;
+  // 1. Lógica para os Cards de Resumo
+  const today = new Date().toISOString().split('T')[0];
+  const stats = [
+    { 
+      label: "Total Geral", 
+      value: appointments.length, 
+      color: "border-ibicuitinga-royalBlue", 
+      textColor: "text-ibicuitinga-royalBlue",
+      icon: <Users size={20} />,
+      action: "VER REGISTROS"
+    },
+    { 
+      label: "Para Hoje", 
+      value: appointments.filter(a => a.date === today).length, 
+      color: "border-green-500", 
+      textColor: "text-green-600",
+      icon: <CalendarDays size={20} />,
+      action: "VER HOJE"
+    },
+    { 
+      label: "Ativos", 
+      value: appointments.filter(a => a.status === 'scheduled').length, 
+      color: "border-orange-500", 
+      textColor: "text-orange-600",
+      icon: <Clock size={20} />,
+      action: "VER ATIVOS"
+    },
+    { 
+      label: "Avaliação Média", 
+      value: "5.0", 
+      color: "border-yellow-500", 
+      textColor: "text-yellow-600",
+      icon: <Star size={20} />,
+      action: ""
+    }
+  ];
 
-  const dataByService = SERVICES.map((s) => {
-    let name: string = s.name;
-    if (s.id === "1") name = "Alistamento";
-    else if (s.id === "2") name = "CDI";
-    else if (s.id === "4") name = "CIN";
-    else if (s.id === "6") name = "Outros";
-
-    return {
-      name,
-      count: appointments.filter((a) => a.serviceId === s.id).length,
+  // 2. Processamento dos dados do gráfico (Garantindo Outros Serviços)
+  const chartData = useMemo(() => {
+    // Definimos os rótulos curtos para o gráfico
+    const labels: { [key: string]: string } = {
+      '1ª e 2ª via da Carteira de Identidade Nacional': 'CIN',
+      'Alistamento Militar': 'Alistamento',
+      '1ª e 2ª via do Certificado de Dispensa de Incorporação': 'CDI',
+      'Outros Serviços': 'Outros'
     };
-  });
 
-  const averageRating = appointments.filter((a) => a.rating).length > 0
-    ? (
-        appointments.reduce((acc, a) => acc + (a.rating || 0), 0) /
-        appointments.filter((a) => a.rating).length
-      ).toFixed(1)
-    : "5.0";
+    // Mapeia os serviços disponíveis
+    const data = serviceOptions.map(service => ({
+      name: labels[service] || service.split(' ')[0],
+      fullName: service,
+      total: appointments.filter(a => a.serviceName === service).length
+    }));
+
+    // Garante que "Outros" apareça mesmo se não estiver no serviceOptions do mês
+    if (!data.find(d => d.name === 'Outros')) {
+      data.push({
+        name: 'Outros',
+        fullName: 'Outros Serviços',
+        total: appointments.filter(a => a.serviceName.toLowerCase().includes('outro')).length
+      });
+    }
+
+    return data;
+  }, [appointments, serviceOptions]);
+
+  const COLORS = ['#1e3a8a', '#10b981', '#f59e0b', '#3b82f6'];
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      {/* Grid de Cards de Estatísticas */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-        <div
-          onClick={() => setDrilldownType("total")}
-          className="bg-white p-6 rounded-3xl shadow-sm border-b-4 border-ibicuitinga-royalBlue cursor-pointer hover:shadow-xl hover:scale-[1.02] transition-all"
-        >
-          <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
-            Total Geral
-          </p>
-          <h3 className="text-3xl font-black text-ibicuitinga-navy mt-1">
-            {totalApps}
-          </h3>
-          <p className="text-[10px] text-ibicuitinga-royalBlue font-bold mt-2 uppercase">
-            Ver Registros
-          </p>
-        </div>
-
-        <div
-          onClick={() => setDrilldownType("today")}
-          className="bg-white p-6 rounded-3xl shadow-sm border-b-4 border-ibicuitinga-lightGreen cursor-pointer hover:shadow-xl hover:scale-[1.02] transition-all"
-        >
-          <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
-            Para Hoje
-          </p>
-          <h3 className="text-3xl font-black text-ibicuitinga-navy mt-1">
-            {todayApps}
-          </h3>
-          <p className="text-[10px] text-ibicuitinga-lightGreen font-bold mt-2 uppercase">
-            Ver Hoje
-          </p>
-        </div>
-
-        <div
-          onClick={() => setDrilldownType("active")}
-          className="bg-white p-6 rounded-3xl shadow-sm border-b-4 border-ibicuitinga-orange cursor-pointer hover:shadow-xl hover:scale-[1.02] transition-all"
-        >
-          <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
-            Ativos
-          </p>
-          <h3 className="text-3xl font-black text-ibicuitinga-navy mt-1">
-            {activeApps}
-          </h3>
-          <p className="text-[10px] text-ibicuitinga-orange font-bold mt-2 uppercase">
-            Ver Ativos
-          </p>
-        </div>
-
-        <div className="bg-white p-6 rounded-3xl shadow-sm border-b-4 border-ibicuitinga-yellow">
-          <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
-            Avaliação Média
-          </p>
-          <h3 className="text-3xl font-black text-ibicuitinga-navy mt-1">
-            {averageRating}
-          </h3>
-        </div>
+    <div className="space-y-8 animate-fade-in">
+      
+      {/* GRID DE CARDS SUPERIORES */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {stats.map((stat, index) => (
+          <div key={index} className={`bg-white p-6 rounded-[2rem] shadow-sm border-b-4 ${stat.color} hover:shadow-md transition-shadow`}>
+            <div className="flex justify-between items-start mb-4">
+              <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{stat.label}</span>
+              <div className={`${stat.textColor} opacity-50`}>{stat.icon}</div>
+            </div>
+            <div className={`text-4xl font-black ${stat.textColor} mb-4`}>{stat.value}</div>
+            {stat.action && (
+              <button 
+                onClick={() => setDrilldownType(stat.label)}
+                className={`text-[10px] font-black uppercase tracking-tighter hover:underline ${stat.textColor}`}
+              >
+                {stat.action}
+              </button>
+            )}
+          </div>
+        ))}
       </div>
 
-      {/* Seção do Gráfico */}
-      <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-gray-100 h-80">
-        <h4 className="font-black text-ibicuitinga-navy uppercase text-xs tracking-widest mb-6">
-          Demanda por Serviço
-        </h4>
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={dataByService}>
-            <XAxis
-              dataKey="name"
-              fontSize={10}
-              fontWeight="bold"
-              axisLine={false}
-              tickLine={false}
-            />
-            <YAxis fontSize={10} axisLine={false} tickLine={false} />
-            <Tooltip
-              contentStyle={{
-                borderRadius: "16px",
-                border: "none",
-                boxShadow: "0 10px 15px -3px rgba(0,0,0,0.1)",
-              }}
-            />
-            <Bar dataKey="count" radius={[10, 10, 0, 0]}>
-              {dataByService.map((_, index) => (
-                <Cell
-                  key={index}
-                  fill={["#055FAD", "#00A859", "#FC7917", "#FEB914"][index % 4]}
-                />
-              ))}
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
+      {/* SEÇÃO DE DEMANDA COM FILTROS INTEGRADOS ABAIXO DOS CARDS */}
+      <div className="bg-white p-8 rounded-[3rem] shadow-sm border border-gray-100">
+        
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-10 gap-6">
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-gray-50 rounded-2xl text-ibicuitinga-navy">
+              <TrendingUp size={24} />
+            </div>
+            <div>
+              <h3 className="text-xl font-black text-ibicuitinga-navy uppercase tracking-tight">Demanda por Serviço</h3>
+              <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Fluxo volumétrico mensal</p>
+            </div>
+          </div>
+
+          {/* BARRA DE FILTROS INTEGRADA AO GRÁFICO */}
+          <div className="flex flex-wrap items-center gap-2 bg-gray-50 p-2 rounded-[1.5rem] border border-gray-100 w-full lg:w-auto">
+            
+            <div className="flex items-center gap-2 px-4 py-2 bg-white rounded-xl shadow-sm border border-gray-50 flex-1 lg:flex-none">
+              <Calendar size={14} className="text-ibicuitinga-royalBlue" />
+              <input 
+                type="month" 
+                value={selectedMonth}
+                onChange={(e) => setSelectedMonth(e.target.value)}
+                className="text-[10px] font-black uppercase outline-none text-ibicuitinga-navy bg-transparent cursor-pointer"
+              />
+            </div>
+
+            <div className="flex items-center gap-2 px-4 py-2 bg-white rounded-xl shadow-sm border border-gray-50 flex-1 lg:flex-none">
+              <Filter size={14} className="text-ibicuitinga-royalBlue" />
+              <select 
+                value={selectedService}
+                onChange={(e) => setSelectedService(e.target.value)}
+                className="text-[10px] font-black uppercase outline-none text-ibicuitinga-navy bg-transparent cursor-pointer min-w-[140px]"
+              >
+                <option value="all">Todos os Serviços</option>
+                {serviceOptions.map(opt => (
+                  <option key={opt} value={opt}>{opt}</option>
+                ))}
+              </select>
+            </div>
+
+            <button 
+              onClick={resetFilters}
+              className="p-2.5 bg-white text-gray-400 hover:text-ibicuitinga-navy rounded-xl border border-gray-50 shadow-sm transition-all active:scale-95"
+              title="Resetar Filtros"
+            >
+              <RefreshCcw size={14} />
+            </button>
+          </div>
+        </div>
+
+        {/* GRÁFICO DE BARRAS */}
+        <div className="h-[350px] w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
+              <XAxis 
+                dataKey="name" 
+                axisLine={false} 
+                tickLine={false} 
+                tick={{ fill: '#9ca3af', fontSize: 10, fontWeight: 900 }} 
+                dy={10}
+              />
+              <YAxis 
+                axisLine={false} 
+                tickLine={false} 
+                tick={{ fill: '#9ca3af', fontSize: 10, fontWeight: 900 }} 
+              />
+              <Tooltip 
+                cursor={{ fill: '#f9fafb' }}
+                contentStyle={{ 
+                  borderRadius: '16px', 
+                  border: 'none', 
+                  boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)',
+                  padding: '12px' 
+                }}
+                labelStyle={{ fontWeight: 900, color: '#1e3a8a', marginBottom: '4px', fontSize: '12px' }}
+              />
+              <Bar 
+                dataKey="total" 
+                radius={[8, 8, 8, 8]} 
+                barSize={60}
+              >
+                {chartData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
       </div>
     </div>
   );

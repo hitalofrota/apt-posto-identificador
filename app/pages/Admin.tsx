@@ -1,9 +1,17 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useAdminData } from "../hooks/useAdminData";
 import { useAuth } from "../contexts/AuthContext";
 import { DashboardTab } from "../components/admin/DashboardTab";
 import { ReportsTab } from "../components/admin/ReportsTab";
-import { Lock, LogOut, LogIn, User, KeyRound, AlertTriangle, Loader2 } from "lucide-react";
+import { 
+  Lock, 
+  LogOut, 
+  LogIn, 
+  User, 
+  KeyRound, 
+  AlertTriangle, 
+  Loader2 
+} from "lucide-react";
 import api from "../services/api";
 
 const Admin: React.FC = () => {
@@ -15,7 +23,26 @@ const Admin: React.FC = () => {
   const [loginError, setLoginError] = useState(false);
   const [activeTab, setActiveTab] = useState<"dashboard" | "schedule" | "feedback" | "reports">("dashboard");
 
+  // Estados de Filtro mantidos aqui para controle global
+  const [selectedMonth, setSelectedMonth] = useState<string>(new Date().toISOString().substring(0, 7));
+  const [selectedService, setSelectedService] = useState<string>("all");
+
   const { appointments } = useAdminData(isAuthenticated);
+
+  // Lógica de filtragem aplicada aos dados que descem para as abas
+  const filteredAppointments = useMemo(() => {
+    return appointments.filter(app => {
+      const appMonth = app.date.substring(0, 7);
+      const matchMonth = selectedMonth === "" || appMonth === selectedMonth;
+      const matchService = selectedService === "all" || app.serviceName === selectedService;
+      return matchMonth && matchService;
+    });
+  }, [appointments, selectedMonth, selectedService]);
+
+  const serviceOptions = useMemo(() => {
+    const services = appointments.map(a => a.serviceName);
+    return Array.from(new Set(services)).sort();
+  }, [appointments]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,13 +54,17 @@ const Admin: React.FC = () => {
         username: usernameInput,
         password: passwordInput,
       });
-      
       login(response.data.token);
     } catch (err) {
       setLoginError(true);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const resetFilters = () => {
+    setSelectedMonth(new Date().toISOString().substring(0, 7));
+    setSelectedService("all");
   };
 
   if (!isAuthenticated) {
@@ -101,6 +132,7 @@ const Admin: React.FC = () => {
 
   return (
     <div className="space-y-8 pb-10">
+      {/* Header simplificado sem a barra de filtros flutuante */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
         <div className="flex items-center gap-4">
           <div className="p-3 bg-ibicuitinga-navy text-ibicuitinga-yellow rounded-2xl shadow-xl">
@@ -135,12 +167,27 @@ const Admin: React.FC = () => {
       </div>
 
       <div className="transition-all duration-500">
-        {activeTab === "dashboard" && <DashboardTab appointments={appointments} setDrilldownType={() => {}} />}
-        {activeTab === "reports" && <ReportsTab appointments={appointments} />}
+        {activeTab === "dashboard" && (
+          <DashboardTab   
+            appointments={filteredAppointments} 
+            selectedMonth={selectedMonth}
+            setSelectedMonth={setSelectedMonth}
+            selectedService={selectedService}
+            setSelectedService={setSelectedService}
+            serviceOptions={serviceOptions}
+            resetFilters={resetFilters}
+            setDrilldownType={() => {}} 
+          />
+        )}
+        
+        {activeTab === "reports" && (
+          <ReportsTab appointments={filteredAppointments} />
+        )}
+        
         {(activeTab === "feedback" || activeTab === "schedule") && (
-           <div className="p-20 text-center bg-white rounded-[2.5rem] border-2 border-dashed border-gray-100">
-             <p className="text-gray-300 font-black uppercase tracking-widest">Módulo em Desenvolvimento</p>
-           </div>
+            <div className="p-20 text-center bg-white rounded-[2.5rem] border-2 border-dashed border-gray-100">
+              <p className="text-gray-300 font-black uppercase tracking-widest">Módulo em Desenvolvimento</p>
+            </div>
         )}
       </div>
     </div>
