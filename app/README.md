@@ -22,6 +22,9 @@ View your app in AI Studio: https://ai.studio/apps/drive/1s1R_DmDatRp4KsMgrAwL0y
 # Rodar nginx
 sudo service nginx restart 
 
+# Rodar o docker
+Docker compose up --build
+
 # Rodar ngrok
 ngrok http 80
 
