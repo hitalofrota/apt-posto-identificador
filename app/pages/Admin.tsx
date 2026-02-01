@@ -4,6 +4,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { DashboardTab } from "../components/admin/DashboardTab";
 import { ReportsTab } from "../components/admin/ReportsTab";
 import { FeedbackTab } from "../components/admin/FeedbackTab";
+import { RecordsModal } from "../components/admin/RecordsModal"; // Importe o componente do Modal
 import { 
   Lock, 
   LogOut, 
@@ -14,6 +15,7 @@ import {
   Loader2 
 } from "lucide-react";
 import api from "../services/api";
+import { Appointment } from "../types";
 
 const Admin: React.FC = () => {
   const { isAuthenticated, login, logout } = useAuth();
@@ -24,8 +26,14 @@ const Admin: React.FC = () => {
   const [loginError, setLoginError] = useState(false);
   const [activeTab, setActiveTab] = useState<"dashboard" | "schedule" | "feedback" | "reports">("dashboard");
 
+  // Estados de Filtro
   const [selectedMonth, setSelectedMonth] = useState<string>(new Date().toISOString().substring(0, 7));
   const [selectedService, setSelectedService] = useState<string>("all");
+
+  // Estados do Modal de Detalhes
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalTitle, setModalTitle] = useState("");
+  const [modalData, setModalData] = useState<Appointment[]>([]);
 
   const { appointments } = useAdminData(isAuthenticated);
 
@@ -43,11 +51,33 @@ const Admin: React.FC = () => {
     return Array.from(new Set(services)).sort();
   }, [appointments]);
 
+  // Função para abrir o modal com dados específicos dos cards
+  const openRecordsModal = (type: string | null) => {
+    if (!type) return;
+
+    let data = filteredAppointments;
+    let title = "Registros Detalhados";
+
+    if (type === "Para Hoje") {
+      const today = new Date().toISOString().split('T')[0];
+      data = filteredAppointments.filter(a => a.date === today);
+      title = "Agendamentos de Hoje";
+    } else if (type === "Ativos") {
+      data = filteredAppointments.filter(a => a.status === 'scheduled');
+      title = "Agendamentos Ativos";
+    } else if (type === "Total Geral") {
+      title = "Todos os Registros (Filtrados)";
+    }
+
+    setModalData(data);
+    setModalTitle(title);
+    setIsModalOpen(true);
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setLoginError(false);
-
     try {
       const response = await api.post("/login", {
         username: usernameInput,
@@ -73,12 +103,10 @@ const Admin: React.FC = () => {
           <div className="w-20 h-20 bg-ibicuitinga-navy rounded-3xl flex items-center justify-center mx-auto text-ibicuitinga-yellow shadow-lg">
             <Lock size={32} strokeWidth={2.5} />
           </div>
-          
           <div>
             <h2 className="text-3xl font-black text-ibicuitinga-navy uppercase tracking-tighter">Acesso Restrito</h2>
             <p className="text-gray-400 font-bold text-sm mt-2 uppercase tracking-widest">Identifique-se para continuar</p>
           </div>
-
           <form onSubmit={handleLogin} className="space-y-4 text-left">
             <div className="space-y-1">
               <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Usuário</label>
@@ -94,7 +122,6 @@ const Admin: React.FC = () => {
                 />
               </div>
             </div>
-
             <div className="space-y-1">
               <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Senha</label>
               <div className="relative">
@@ -114,7 +141,6 @@ const Admin: React.FC = () => {
                 </p>
               )}
             </div>
-
             <button 
               type="submit" 
               disabled={isLoading}
@@ -165,7 +191,6 @@ const Admin: React.FC = () => {
       </div>
 
       <div className="transition-all duration-500">
-        {/* Aba de Início: Recebe dados filtrados e controles de filtro */}
         {activeTab === "dashboard" && (
           <DashboardTab   
             appointments={filteredAppointments} 
@@ -175,27 +200,24 @@ const Admin: React.FC = () => {
             setSelectedService={setSelectedService}
             serviceOptions={serviceOptions}
             resetFilters={resetFilters}
-            setDrilldownType={() => {}} 
+            setDrilldownType={openRecordsModal} 
           />
         )}
-        
-        {/* Aba de Relatórios */}
-        {activeTab === "reports" && (
-          <ReportsTab appointments={filteredAppointments} />
-        )}
-
-        {/* Aba de Feedbacks: Mostra as avaliações do cidadão */}
-        {activeTab === "feedback" && (
-          <FeedbackTab appointments={filteredAppointments} />
-        )}
-        
-        {/* Aba de Agenda: Módulo em desenvolvimento */}
+        {activeTab === "reports" && <ReportsTab appointments={filteredAppointments} />}
+        {activeTab === "feedback" && <FeedbackTab appointments={filteredAppointments} />}
         {activeTab === "schedule" && (
             <div className="p-20 text-center bg-white rounded-[2.5rem] border-2 border-dashed border-gray-100">
               <p className="text-gray-300 font-black uppercase tracking-widest">Módulo em Desenvolvimento</p>
             </div>
         )}
       </div>
+
+      <RecordsModal 
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        appointments={modalData}
+        title={modalTitle}
+      />
     </div>
   );
 };

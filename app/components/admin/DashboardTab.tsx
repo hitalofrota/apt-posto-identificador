@@ -41,8 +41,8 @@ export const DashboardTab: React.FC<DashboardProps> = ({
   resetFilters,
   setDrilldownType
 }) => {
-  // 1. Lógica para os Cards de Resumo
   const today = new Date().toISOString().split('T')[0];
+
   const stats = [
     { 
       label: "Total Geral", 
@@ -78,9 +78,7 @@ export const DashboardTab: React.FC<DashboardProps> = ({
     }
   ];
 
-  // 2. Processamento dos dados do gráfico (Garantindo Outros Serviços)
   const chartData = useMemo(() => {
-    // Definimos os rótulos curtos para o gráfico
     const labels: { [key: string]: string } = {
       '1ª e 2ª via da Carteira de Identidade Nacional': 'CIN',
       'Alistamento Militar': 'Alistamento',
@@ -88,14 +86,12 @@ export const DashboardTab: React.FC<DashboardProps> = ({
       'Outros Serviços': 'Outros'
     };
 
-    // Mapeia os serviços disponíveis
     const data = serviceOptions.map(service => ({
       name: labels[service] || service.split(' ')[0],
       fullName: service,
       total: appointments.filter(a => a.serviceName === service).length
     }));
 
-    // Garante que "Outros" apareça mesmo se não estiver no serviceOptions do mês
     if (!data.find(d => d.name === 'Outros')) {
       data.push({
         name: 'Outros',
@@ -103,7 +99,6 @@ export const DashboardTab: React.FC<DashboardProps> = ({
         total: appointments.filter(a => a.serviceName.toLowerCase().includes('outro')).length
       });
     }
-
     return data;
   }, [appointments, serviceOptions]);
 
@@ -115,27 +110,31 @@ export const DashboardTab: React.FC<DashboardProps> = ({
       {/* GRID DE CARDS SUPERIORES */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {stats.map((stat, index) => (
-          <div key={index} className={`bg-white p-6 rounded-[2rem] shadow-sm border-b-4 ${stat.color} hover:shadow-md transition-shadow`}>
+          <div 
+            key={index} 
+            // ADICIONADO: onClick no card inteiro e cursor pointer
+            onClick={() => stat.action && setDrilldownType(stat.label)}
+            className={`bg-white p-6 rounded-[2rem] shadow-sm border-b-4 ${stat.color} 
+              transition-all duration-300 hover:shadow-xl hover:-translate-y-1 
+              ${stat.action ? "cursor-pointer" : "cursor-default"}`}
+          >
             <div className="flex justify-between items-start mb-4">
               <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{stat.label}</span>
               <div className={`${stat.textColor} opacity-50`}>{stat.icon}</div>
             </div>
             <div className={`text-4xl font-black ${stat.textColor} mb-4`}>{stat.value}</div>
+            
             {stat.action && (
-              <button 
-                onClick={() => setDrilldownType(stat.label)}
-                className={`text-[10px] font-black uppercase tracking-tighter hover:underline ${stat.textColor}`}
-              >
+              <div className={`text-[10px] font-black uppercase tracking-tighter ${stat.textColor} flex items-center gap-1`}>
                 {stat.action}
-              </button>
+              </div>
             )}
           </div>
         ))}
       </div>
 
-      {/* SEÇÃO DE DEMANDA COM FILTROS INTEGRADOS ABAIXO DOS CARDS */}
+      {/* SEÇÃO DE DEMANDA */}
       <div className="bg-white p-8 rounded-[3rem] shadow-sm border border-gray-100">
-        
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-10 gap-6">
           <div className="flex items-center gap-4">
             <div className="p-3 bg-gray-50 rounded-2xl text-ibicuitinga-navy">
@@ -147,9 +146,7 @@ export const DashboardTab: React.FC<DashboardProps> = ({
             </div>
           </div>
 
-          {/* BARRA DE FILTROS INTEGRADA AO GRÁFICO */}
           <div className="flex flex-wrap items-center gap-2 bg-gray-50 p-2 rounded-[1.5rem] border border-gray-100 w-full lg:w-auto">
-            
             <div className="flex items-center gap-2 px-4 py-2 bg-white rounded-xl shadow-sm border border-gray-50 flex-1 lg:flex-none">
               <Calendar size={14} className="text-ibicuitinga-royalBlue" />
               <input 
@@ -177,45 +174,24 @@ export const DashboardTab: React.FC<DashboardProps> = ({
             <button 
               onClick={resetFilters}
               className="p-2.5 bg-white text-gray-400 hover:text-ibicuitinga-navy rounded-xl border border-gray-50 shadow-sm transition-all active:scale-95"
-              title="Resetar Filtros"
             >
               <RefreshCcw size={14} />
             </button>
           </div>
         </div>
 
-        {/* GRÁFICO DE BARRAS */}
         <div className="h-[350px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
-              <XAxis 
-                dataKey="name" 
-                axisLine={false} 
-                tickLine={false} 
-                tick={{ fill: '#9ca3af', fontSize: 10, fontWeight: 900 }} 
-                dy={10}
-              />
-              <YAxis 
-                axisLine={false} 
-                tickLine={false} 
-                tick={{ fill: '#9ca3af', fontSize: 10, fontWeight: 900 }} 
-              />
+              <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#9ca3af', fontSize: 10, fontWeight: 900 }} dy={10} />
+              <YAxis axisLine={false} tickLine={false} tick={{ fill: '#9ca3af', fontSize: 10, fontWeight: 900 }} />
               <Tooltip 
                 cursor={{ fill: '#f9fafb' }}
-                contentStyle={{ 
-                  borderRadius: '16px', 
-                  border: 'none', 
-                  boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)',
-                  padding: '12px' 
-                }}
-                labelStyle={{ fontWeight: 900, color: '#1e3a8a', marginBottom: '4px', fontSize: '12px' }}
+                contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)', padding: '12px' }}
+                labelStyle={{ fontWeight: 900, color: '#1e3a8a', fontSize: '12px' }}
               />
-              <Bar 
-                dataKey="total" 
-                radius={[8, 8, 8, 8]} 
-                barSize={60}
-              >
+              <Bar dataKey="total" radius={[8, 8, 8, 8]} barSize={60}>
                 {chartData.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                 ))}
