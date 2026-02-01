@@ -35,7 +35,7 @@ const Admin: React.FC = () => {
   const [modalTitle, setModalTitle] = useState("");
   const [modalData, setModalData] = useState<Appointment[]>([]);
 
-  const { appointments } = useAdminData(isAuthenticated);
+  const { appointments, refreshData, actions } = useAdminData(isAuthenticated);
 
   const filteredAppointments = useMemo(() => {
     return appointments.filter(app => {
@@ -217,6 +217,7 @@ const Admin: React.FC = () => {
         onClose={() => setIsModalOpen(false)}
         appointments={modalData}
         title={modalTitle}
+        onRefresh={refreshData}
       />
     </div>
   );
