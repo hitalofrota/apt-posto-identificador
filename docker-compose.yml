@@ -34,7 +34,7 @@ services:
     build: ./app
     container_name: scheduling_app
     ports:
-      - "80:80"
+      - "8081:80"
     depends_on:
       - api
 
