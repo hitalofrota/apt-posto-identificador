@@ -69,10 +69,10 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
       <footer className="bg-ibicuitinga-navy text-white/60 py-12 mt-auto border-t-8 border-ibicuitinga-lightGreen">
         <div className="container mx-auto px-4 text-center space-y-6">
           <div className="flex justify-center mb-4">
-            <img 
-              src={brasaoUrl} 
-              alt="Brasão Municipal" 
-              className="h-20 w-auto brightness-0 invert opacity-40 hover:opacity-100 transition-opacity" 
+            <img
+              src="../public/images/favicon.jpg"
+              alt="Brasão Municipal"
+              className="h-20 w-auto brightness-0 invert opacity-40 hover:opacity-100 transition-opacity"
             />
           </div>
           <div className="flex justify-center gap-2 max-w-[200px] mx-auto h-2">

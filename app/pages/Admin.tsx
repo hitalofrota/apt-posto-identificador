@@ -4,7 +4,8 @@ import { useAuth } from "../contexts/AuthContext";
 import { DashboardTab } from "../components/admin/DashboardTab";
 import { ReportsTab } from "../components/admin/ReportsTab";
 import { FeedbackTab } from "../components/admin/FeedbackTab";
-import { RecordsModal } from "../components/admin/RecordsModal"; // Importe o componente do Modal
+import { ScheduleTab } from "../components/schedule/ScheduleTab"; 
+import { RecordsModal } from "../components/admin/RecordsModal";
 import { 
   Lock, 
   LogOut, 
@@ -35,7 +36,8 @@ const Admin: React.FC = () => {
   const [modalTitle, setModalTitle] = useState("");
   const [modalData, setModalData] = useState<Appointment[]>([]);
 
-  const { appointments, refreshData, actions } = useAdminData(isAuthenticated);
+  // Extração de dados e ações do Hook useAdminData
+  const { appointments, blockedDates, blockedSlots, isLoading: dataLoading, refreshData, actions, checkMonthBlocked } = useAdminData(isAuthenticated);
 
   const filteredAppointments = useMemo(() => {
     return appointments.filter(app => {
@@ -191,6 +193,7 @@ const Admin: React.FC = () => {
       </div>
 
       <div className="transition-all duration-500">
+        {/* Aba de Dashboard (Início) */}
         {activeTab === "dashboard" && (
           <DashboardTab   
             appointments={filteredAppointments} 
@@ -203,15 +206,25 @@ const Admin: React.FC = () => {
             setDrilldownType={openRecordsModal} 
           />
         )}
-        {activeTab === "reports" && <ReportsTab appointments={filteredAppointments} />}
-        {activeTab === "feedback" && <FeedbackTab appointments={filteredAppointments} />}
+
+        {/* Aba de Agenda (Controle de Bloqueios) */}
         {activeTab === "schedule" && (
-            <div className="p-20 text-center bg-white rounded-[2.5rem] border-2 border-dashed border-gray-100">
-              <p className="text-gray-300 font-black uppercase tracking-widest">Módulo em Desenvolvimento</p>
-            </div>
+          <ScheduleTab 
+            blockedDates={blockedDates}
+            blockedSlots={blockedSlots}
+            actions={actions}
+            checkMonthBlocked={checkMonthBlocked}
+          />
         )}
+        
+        {/* Aba de Relatórios */}
+        {activeTab === "reports" && <ReportsTab appointments={filteredAppointments} />}
+
+        {/* Aba de Feedbacks */}
+        {activeTab === "feedback" && <FeedbackTab appointments={filteredAppointments} />}
       </div>
 
+      {/* Modal de Registros Detalhados */}
       <RecordsModal 
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
