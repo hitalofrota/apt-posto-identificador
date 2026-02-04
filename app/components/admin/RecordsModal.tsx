@@ -22,6 +22,12 @@ export const RecordsModal: React.FC<RecordsModalProps> = ({
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [selectedToEdit, setSelectedToEdit] = useState<Appointment | null>(null);
+  
+  const [localAppointments, setLocalAppointments] = useState<Appointment[]>(initialAppointments);
+
+  useEffect(() => {
+    setLocalAppointments(initialAppointments);
+  }, [initialAppointments]);
 
   if (!isOpen) return null;
 
@@ -35,12 +41,18 @@ export const RecordsModal: React.FC<RecordsModalProps> = ({
     
     setLoadingId(id);
     try {
-      // Usando DELETE conforme o sucesso verificado no log do seu sistema
       const response = await api.delete(`/appointments/${id}`);
       
       if (response.status >= 200 && response.status < 300) {
+        setLocalAppointments(prev => 
+          prev.map(app => 
+            app.id === id ? { ...app, status: 'cancelled' } : app
+          )
+        );
+        
         alert("Agendamento cancelado com sucesso!");
-        onRefresh(); // Dispara o refreshData no useAdminData
+        
+        onRefresh();
       }
     } catch (error: any) {
       console.error("Erro ao cancelar:", error);
@@ -59,7 +71,7 @@ export const RecordsModal: React.FC<RecordsModalProps> = ({
             <div>
               <h2 className="text-2xl font-black text-ibicuitinga-navy uppercase tracking-tight">{title}</h2>
               <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-1">
-                {initialAppointments.length} REGISTROS ENCONTRADOS
+                {localAppointments.length} REGISTROS ENCONTRADOS
               </p>
             </div>
             <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full text-gray-400 border border-gray-100 transition-colors">
@@ -68,8 +80,8 @@ export const RecordsModal: React.FC<RecordsModalProps> = ({
           </div>
 
           <div className="p-6 max-h-[60vh] overflow-y-auto space-y-4 bg-gray-50/50">
-            {initialAppointments.length > 0 ? (
-              initialAppointments.map((app) => (
+            {localAppointments.length > 0 ? (
+              localAppointments.map((app) => (
                 <div key={app.id} className="bg-white p-6 rounded-[2rem] border border-gray-100 shadow-sm flex items-center justify-between group hover:border-ibicuitinga-royalBlue/30 transition-all">
                   <div className="space-y-2">
                     <div className="flex items-center gap-2">
@@ -77,11 +89,11 @@ export const RecordsModal: React.FC<RecordsModalProps> = ({
                         {app.protocol}
                       </span>
                       <span className={`text-[9px] font-black px-2 py-1 rounded-md uppercase ${
-                        app.status === 'completed' ? 'bg-blue-100 text-blue-600' : 
-                        app.status === 'cancelled' ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'
+                        app.status === 'cancelled' ? 'bg-red-100 text-red-600' : 
+                        app.status === 'completed' ? 'bg-blue-100 text-blue-600' : 'bg-green-100 text-green-600'
                       }`}>
-                        {app.status === 'completed' ? 'Concluído' : 
-                         app.status === 'cancelled' ? 'Cancelado' : 'Ativo'}
+                        {app.status === 'cancelled' ? 'Cancelado' : 
+                         app.status === 'completed' ? 'Concluído' : 'Ativo'}
                       </span>
                     </div>
                     
@@ -107,7 +119,7 @@ export const RecordsModal: React.FC<RecordsModalProps> = ({
                       disabled={loadingId === app.id || app.status === 'cancelled'}
                       className={`p-3 rounded-full transition-all shadow-sm flex items-center justify-center active:scale-95 ${
                         app.status === 'cancelled' 
-                        ? 'bg-gray-100 text-gray-300' 
+                        ? 'bg-gray-100 text-gray-300 cursor-not-allowed' 
                         : 'bg-red-50 text-red-500 hover:bg-red-500 hover:text-white'
                       }`}
                     >
