@@ -27,16 +27,13 @@ const Admin: React.FC = () => {
   const [loginError, setLoginError] = useState(false);
   const [activeTab, setActiveTab] = useState<"dashboard" | "schedule" | "feedback" | "reports">("dashboard");
 
-  // Estados de Filtro
   const [selectedMonth, setSelectedMonth] = useState<string>(new Date().toISOString().substring(0, 7));
   const [selectedService, setSelectedService] = useState<string>("all");
 
-  // Estados do Modal de Detalhes
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalTitle, setModalTitle] = useState("");
   const [modalData, setModalData] = useState<Appointment[]>([]);
 
-  // Extração de dados e ações do Hook useAdminData
   const { appointments, blockedDates, blockedSlots, isLoading: dataLoading, refreshData, actions, checkMonthBlocked } = useAdminData(isAuthenticated);
 
   const filteredAppointments = useMemo(() => {
@@ -53,7 +50,6 @@ const Admin: React.FC = () => {
     return Array.from(new Set(services)).sort();
   }, [appointments]);
 
-  // Função para abrir o modal com dados específicos dos cards
   const openRecordsModal = (type: string | null) => {
     if (!type) return;
 

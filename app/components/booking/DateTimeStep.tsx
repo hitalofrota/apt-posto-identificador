@@ -38,7 +38,6 @@ export const DateTimeStep: React.FC<DateTimeStepProps> = ({
   const [slots, setSlots] = useState<TimeSlot[]>([]);
   const [loading, setLoading] = useState(false);
 
-  // Array para renderizar o cabeçalho dos dias da semana
   const weekDays = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 
   useEffect(() => {
@@ -46,7 +45,6 @@ export const DateTimeStep: React.FC<DateTimeStepProps> = ({
       if (!selectedDate) return;
       setLoading(true);
       try {
-        // Envia a data formatada como string para a API
         const data = await getSlotsForDate(format(selectedDate, "yyyy-MM-dd"));
         setSlots(Array.isArray(data) ? data : []);
       } catch (error) {
@@ -64,13 +62,11 @@ export const DateTimeStep: React.FC<DateTimeStepProps> = ({
     end: endOfMonth(calendarMonth) 
   });
 
-  // Calcula o recuo necessário para alinhar o dia 1 com o dia da semana correto
   const firstDayOfMonth = getDay(daysInMonth[0]);
 
   const isDateDisabled = (day: Date) => {
     const today = startOfToday();
     const dateStr = format(day, "yyyy-MM-dd");
-    // Bloqueia dias passados e feriados da lista
     return isBefore(day, today) || FERIADOS.includes(dateStr);
   };
 
@@ -78,7 +74,6 @@ export const DateTimeStep: React.FC<DateTimeStepProps> = ({
     <div className="space-y-6 animate-fade-in">
       <div className="bg-white rounded-[2.5rem] shadow-xl p-8 border border-gray-100">
         
-        {/* Navegação entre meses */}
         <div className="flex justify-between items-center mb-8 px-2">
           <button 
             onClick={() => setCalendarMonth(addMonths(calendarMonth, -1))}
@@ -125,14 +120,14 @@ export const DateTimeStep: React.FC<DateTimeStepProps> = ({
                 disabled={disabled}
                 onClick={() => { 
                   setSelectedDate(day); 
-                  setSelectedTime(""); // Reset vital para evitar erro 400
+                  setSelectedTime("");
                 }}
                 className={`
                   h-12 w-full rounded-2xl font-bold transition-all text-sm flex items-center justify-center
                   ${disabled 
-                    ? "bg-gray-100 text-gray-300 cursor-not-allowed opacity-40" // Contraste para dias bloqueados
+                    ? "bg-gray-100 text-gray-300 cursor-not-allowed opacity-40"
                     : isSelected 
-                      ? "bg-ibicuitinga-navy text-white shadow-lg scale-105" // Destaque para seleção
+                      ? "bg-ibicuitinga-navy text-white shadow-lg scale-105"
                       : "bg-white border-2 border-gray-50 text-ibicuitinga-navy hover:border-ibicuitinga-royalBlue hover:bg-ibicuitinga-royalBlue/5"
                   }
                 `}

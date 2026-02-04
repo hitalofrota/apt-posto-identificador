@@ -54,12 +54,11 @@ export const EditRecordModal: React.FC<EditRecordModalProps> = ({
       
       if (response.status >= 200 && response.status < 300) {
         alert("Alterações salvas com sucesso!");
-        onRefresh(); // Sincroniza o front-end com o banco
-        onClose();   // Fecha o formulário de edição
+        onRefresh();
+        onClose();
       }
     } catch (error: any) {
       console.error("Erro ao atualizar:", error.response?.data || error.message);
-      // Fallback: se houver erro de parse mas salvou no banco
       onRefresh();
       onClose();
     } finally {

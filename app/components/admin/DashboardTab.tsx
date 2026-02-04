@@ -112,7 +112,6 @@ export const DashboardTab: React.FC<DashboardProps> = ({
         {stats.map((stat, index) => (
           <div 
             key={index} 
-            // ADICIONADO: onClick no card inteiro e cursor pointer
             onClick={() => stat.action && setDrilldownType(stat.label)}
             className={`bg-white p-6 rounded-[2rem] shadow-sm border-b-4 ${stat.color} 
               transition-all duration-300 hover:shadow-xl hover:-translate-y-1 
