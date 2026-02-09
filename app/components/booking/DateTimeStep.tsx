@@ -34,15 +34,20 @@ export const DateTimeStep: React.FC<DateTimeStepProps> = ({
   setSelectedTime, 
   onNext 
 }) => {
-  const [calendarMonth, setCalendarMonth] = useState(new Date(2026, 0, 1));
+  const [calendarMonth, setCalendarMonth] = useState(startOfMonth(new Date()));
   const [slots, setSlots] = useState<TimeSlot[]>([]);
+  
   const [loading, setLoading] = useState(false);
 
   const weekDays = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 
   useEffect(() => {
     const load = async () => {
-      if (!selectedDate) return;
+      if (!selectedDate) {
+        setSlots([]);
+        return;
+      }
+
       setLoading(true);
       try {
         const data = await getSlotsForDate(format(selectedDate, "yyyy-MM-dd"));
@@ -76,6 +81,7 @@ export const DateTimeStep: React.FC<DateTimeStepProps> = ({
         
         <div className="flex justify-between items-center mb-8 px-2">
           <button 
+            type="button"
             onClick={() => setCalendarMonth(addMonths(calendarMonth, -1))}
             className="p-2 hover:bg-gray-100 rounded-full transition-colors"
           >
@@ -87,6 +93,7 @@ export const DateTimeStep: React.FC<DateTimeStepProps> = ({
           </h3>
           
           <button 
+            type="button"
             onClick={() => setCalendarMonth(addMonths(calendarMonth, 1))}
             className="p-2 hover:bg-gray-100 rounded-full transition-colors"
           >
@@ -94,22 +101,17 @@ export const DateTimeStep: React.FC<DateTimeStepProps> = ({
           </button>
         </div>
 
-        {/* Grid de 7 colunas para o calendário */}
         <div className="grid grid-cols-7 gap-2">
-          
-          {/* Cabeçalho fixo dos dias da semana */}
           {weekDays.map((day) => (
             <div key={day} className="text-center text-[11px] font-black text-gray-500 uppercase pb-2 border-b border-gray-50 mb-2">
               {day}
             </div>
           ))}
 
-          {/* Renderiza divisores vazios para alinhar o início do mês */}
           {Array.from({ length: firstDayOfMonth }).map((_, i) => (
             <div key={`empty-${i}`} className="h-12 w-full" />
           ))}
 
-          {/* Renderização dos dias ativos e desabilitados */}
           {daysInMonth.map((day) => {
             const disabled = isDateDisabled(day);
             const isSelected = selectedDate && isSameDay(day, selectedDate);
@@ -117,6 +119,7 @@ export const DateTimeStep: React.FC<DateTimeStepProps> = ({
             return (
               <button 
                 key={day.toISOString()}
+                type="button"
                 disabled={disabled}
                 onClick={() => { 
                   setSelectedDate(day); 
@@ -139,7 +142,6 @@ export const DateTimeStep: React.FC<DateTimeStepProps> = ({
         </div>
       </div>
 
-      {/* Seção de horários - Exibida apenas quando uma data válida é clicada */}
       {selectedDate && (
         <div className="bg-white p-8 rounded-[2.5rem] shadow-lg border border-gray-100 animate-slide-up">
           <h4 className="font-black uppercase text-xs mb-6 flex items-center gap-2 text-ibicuitinga-navy">
@@ -157,6 +159,7 @@ export const DateTimeStep: React.FC<DateTimeStepProps> = ({
                 slots.map(slot => (
                   <button 
                     key={slot.time} 
+                    type="button"
                     disabled={!slot.available} 
                     onClick={() => setSelectedTime(slot.time)}
                     className={`
@@ -179,6 +182,7 @@ export const DateTimeStep: React.FC<DateTimeStepProps> = ({
           )}
           
           <button 
+            type="button"
             onClick={onNext} 
             disabled={!selectedTime} 
             className="w-full mt-8 bg-ibicuitinga-navy text-white py-5 rounded-3xl font-black text-lg shadow-xl active:scale-95 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
