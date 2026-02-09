@@ -57,8 +57,7 @@ const Admin: React.FC = () => {
     let title = "Registros Detalhados";
 
     if (type === "Para Hoje") {
-      // Correção de fuso horário para pegar a data atual local no formato YYYY-MM-DD
-      const today = new Date().toLocaleDateString('en-CA'); 
+      const today = new Date().toISOString().split('T')[0];
       data = filteredAppointments.filter(a => a.date === today);
       title = "Agendamentos de Hoje";
     } else if (type === "Ativos") {
@@ -190,6 +189,7 @@ const Admin: React.FC = () => {
       </div>
 
       <div className="transition-all duration-500">
+        {/* Aba de Dashboard (Início) */}
         {activeTab === "dashboard" && (
           <DashboardTab   
             appointments={filteredAppointments} 
@@ -203,6 +203,7 @@ const Admin: React.FC = () => {
           />
         )}
 
+        {/* Aba de Agenda (Controle de Bloqueios) */}
         {activeTab === "schedule" && (
           <ScheduleTab 
             blockedDates={blockedDates}
@@ -212,10 +213,14 @@ const Admin: React.FC = () => {
           />
         )}
         
+        {/* Aba de Relatórios */}
         {activeTab === "reports" && <ReportsTab appointments={filteredAppointments} />}
+
+        {/* Aba de Feedbacks */}
         {activeTab === "feedback" && <FeedbackTab appointments={filteredAppointments} />}
       </div>
 
+      {/* Modal de Registros Detalhados */}
       <RecordsModal 
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
