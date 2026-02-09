@@ -24,16 +24,12 @@ export const blockController = {
 
   async getSlots(req, res) {
     try {
-      // Recebe a data e o serviço via query params
       const { date, serviceName } = req.query;
 
-      // 1. Pega a lista total de horários configurados
       const allSlots = await blockService.getSlots();
 
-      // Se não houver data, retorna todos (fallback)
       if (!date) return res.json(allSlots);
 
-      // 2. Procura agendamentos já existentes que NÃO estejam cancelados
       const occupiedAppointments = await prisma.appointment.findMany({
         where: {
           date: date,
@@ -43,12 +39,10 @@ export const blockController = {
         select: { time: true }
       });
 
-      // 3. Extrai apenas as strings de horário (ex: "09:00")
       const occupiedTimes = occupiedAppointments.map(app => 
         app.time.includes('|') ? app.time.split('|')[1] : app.time
       );
 
-      // 4. Filtra os horários disponíveis (remove os ocupados)
       const availableSlots = allSlots.filter(slot => {
         const slotTime = slot.includes('|') ? slot.split('|')[1] : slot;
         return !occupiedTimes.includes(slotTime);

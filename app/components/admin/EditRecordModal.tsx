@@ -45,7 +45,6 @@ export const EditRecordModal: React.FC<EditRecordModalProps> = ({
     }
   }, [appointment, isOpen]);
 
-  // Busca horários livres para a DATA selecionada
   useEffect(() => {
     const fetchSlots = async () => {
       if (!formData.date || !formData.serviceName || !isOpen) return;
@@ -59,10 +58,8 @@ export const EditRecordModal: React.FC<EditRecordModalProps> = ({
         const slotsData = response.data.slots || response.data;
         let slots: string[] = Array.isArray(slotsData) ? slotsData : [];
 
-        // Limpa strings data|hora se o backend enviar assim
         slots = slots.map(s => s.includes('|') ? s.split('|')[1] : s);
 
-        // Se for a mesma data do agendamento, permite manter o horário atual
         const originalTime = appointment?.time.includes('|') 
           ? appointment.time.split('|')[1] 
           : appointment?.time;

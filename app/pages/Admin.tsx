@@ -57,7 +57,6 @@ const Admin: React.FC = () => {
     let title = "Registros Detalhados";
 
     if (type === "Para Hoje") {
-      // Correção de fuso horário para pegar a data atual local no formato YYYY-MM-DD
       const today = new Date().toLocaleDateString('en-CA'); 
       data = filteredAppointments.filter(a => a.date === today);
       title = "Agendamentos de Hoje";
