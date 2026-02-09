@@ -54,6 +54,7 @@ export const DataStep: React.FC<Props> = ({
             value={data.name}
             onChange={handleInputChange}
             placeholder="Ex: José da Silva Santos"
+            maxLength={60}
             className={`w-full bg-gray-50 border-2 rounded-2xl p-4 focus:border-ibicuitinga-royalBlue outline-none font-bold text-ibicuitinga-navy transition-colors ${formErrors.name ? "border-red-500 bg-red-50/30" : "border-gray-100"}`}
           />
           {formErrors.name && (
