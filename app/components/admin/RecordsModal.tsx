@@ -32,6 +32,8 @@ export const RecordsModal: React.FC<RecordsModalProps> = ({
   if (!isOpen) return null;
 
   const handleOpenEdit = (app: Appointment) => {
+    if (app.status === 'cancelled' || app.status === 'completed') return;
+    
     setSelectedToEdit(app);
     setIsEditOpen(true);
   };
@@ -81,53 +83,66 @@ export const RecordsModal: React.FC<RecordsModalProps> = ({
 
           <div className="p-6 max-h-[60vh] overflow-y-auto space-y-4 bg-gray-50/50">
             {localAppointments.length > 0 ? (
-              localAppointments.map((app) => (
-                <div key={app.id} className="bg-white p-6 rounded-[2rem] border border-gray-100 shadow-sm flex items-center justify-between group hover:border-ibicuitinga-royalBlue/30 transition-all">
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <span className="bg-ibicuitinga-navy text-white text-[9px] font-black px-2 py-1 rounded-md uppercase">
-                        {app.protocol}
-                      </span>
-                      <span className={`text-[9px] font-black px-2 py-1 rounded-md uppercase ${
-                        app.status === 'cancelled' ? 'bg-red-100 text-red-600' : 
-                        app.status === 'completed' ? 'bg-blue-100 text-blue-600' : 'bg-green-100 text-green-600'
-                      }`}>
-                        {app.status === 'cancelled' ? 'Cancelado' : 
-                         app.status === 'completed' ? 'Concluído' : 'Ativo'}
-                      </span>
-                    </div>
-                    
-                    <h4 className="text-xl font-black text-ibicuitinga-navy capitalize">
-                      {app.citizen.name}
-                    </h4>
-                    
-                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tight">
-                      {app.serviceName} • {new Date(app.date).toLocaleDateString('pt-BR')} ÀS {app.time}
-                    </p>
-                  </div>
+              localAppointments.map((app) => {
+                const isActionDisabled = app.status === 'cancelled' || app.status === 'completed';
 
-                  <div className="flex gap-3">
-                    <button 
-                      onClick={() => handleOpenEdit(app)}
-                      className="p-3 bg-ibicuitinga-skyBlue/10 text-ibicuitinga-royalBlue rounded-full hover:bg-ibicuitinga-royalBlue hover:text-white transition-all shadow-sm active:scale-95"
-                    >
-                      <Pencil size={18} />
-                    </button>
-                    
-                    <button 
-                      onClick={() => handleCancel(app.id)}
-                      disabled={loadingId === app.id || app.status === 'cancelled'}
-                      className={`p-3 rounded-full transition-all shadow-sm flex items-center justify-center active:scale-95 ${
-                        app.status === 'cancelled' 
-                        ? 'bg-gray-100 text-gray-300 cursor-not-allowed' 
-                        : 'bg-red-50 text-red-500 hover:bg-red-500 hover:text-white'
-                      }`}
-                    >
-                      {loadingId === app.id ? <Loader2 size={18} className="animate-spin" /> : <Ban size={18} />}
-                    </button>
+                return (
+                  <div key={app.id} className="bg-white p-6 rounded-[2rem] border border-gray-100 shadow-sm flex items-center justify-between group hover:border-ibicuitinga-royalBlue/30 transition-all">
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <span className="bg-ibicuitinga-navy text-white text-[9px] font-black px-2 py-1 rounded-md uppercase">
+                          {app.protocol}
+                        </span>
+                        <span className={`text-[9px] font-black px-2 py-1 rounded-md uppercase ${
+                          app.status === 'cancelled' ? 'bg-red-100 text-red-600' : 
+                          app.status === 'completed' ? 'bg-blue-100 text-blue-600' : 'bg-green-100 text-green-600'
+                        }`}>
+                          {app.status === 'cancelled' ? 'Cancelado' : 
+                           app.status === 'completed' ? 'Concluído' : 'Ativo'}
+                        </span>
+                      </div>
+                      
+                      <h4 className="text-xl font-black text-ibicuitinga-navy capitalize">
+                        {app.citizen.name}
+                      </h4>
+                      
+                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tight">
+                        {app.serviceName} • {new Date(app.date).toLocaleDateString('pt-BR')} ÀS {app.time}
+                      </p>
+                    </div>
+
+                    <div className="flex gap-3">
+                      {/* Botão Editar com trava */}
+                      <button 
+                        onClick={() => handleOpenEdit(app)}
+                        disabled={isActionDisabled}
+                        title={isActionDisabled ? "Não é possível editar registros finalizados" : "Editar"}
+                        className={`p-3 rounded-full transition-all shadow-sm active:scale-95 ${
+                          isActionDisabled
+                          ? 'bg-gray-100 text-gray-300 cursor-not-allowed opacity-50'
+                          : 'bg-ibicuitinga-skyBlue/10 text-ibicuitinga-royalBlue hover:bg-ibicuitinga-royalBlue hover:text-white'
+                        }`}
+                      >
+                        <Pencil size={18} />
+                      </button>
+                      
+                      {/* Botão Cancelar com trava */}
+                      <button 
+                        onClick={() => handleCancel(app.id)}
+                        disabled={loadingId === app.id || isActionDisabled}
+                        title={isActionDisabled ? "Registro já finalizado ou cancelado" : "Cancelar"}
+                        className={`p-3 rounded-full transition-all shadow-sm flex items-center justify-center active:scale-95 ${
+                          isActionDisabled 
+                          ? 'bg-gray-100 text-gray-300 cursor-not-allowed opacity-50' 
+                          : 'bg-red-50 text-red-500 hover:bg-red-500 hover:text-white'
+                        }`}
+                      >
+                        {loadingId === app.id ? <Loader2 size={18} className="animate-spin" /> : <Ban size={18} />}
+                      </button>
+                    </div>
                   </div>
-                </div>
-              ))
+                );
+              })
             ) : (
               <div className="py-20 text-center text-gray-300 font-black uppercase tracking-widest text-xs">
                 Nenhum registro encontrado.
