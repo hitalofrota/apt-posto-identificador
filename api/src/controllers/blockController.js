@@ -1,4 +1,7 @@
 import { blockService } from '../services/blockService.js';
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
 
 export const blockController = {
   async getDates(req, res) {
@@ -21,9 +24,31 @@ export const blockController = {
 
   async getSlots(req, res) {
     try {
-      const slots = await blockService.getSlots();
-      res.json(slots);
+      const { date, serviceName } = req.query;
+
+      const allSlots = await blockService.getSlots(); 
+
+      const occupiedAppointments = await prisma.appointment.findMany({
+        where: {
+          date: date,
+          serviceName: serviceName,
+          status: { not: 'cancelled' }
+        },
+        select: { time: true }
+      });
+
+      const occupiedTimes = occupiedAppointments.map(app => {
+        return app.time.includes('|') ? app.time.split('|')[1] : app.time;
+      });
+
+      const availableSlots = allSlots.filter(slot => {
+        const slotTime = slot.includes('|') ? slot.split('|')[1] : slot;
+        return !occupiedTimes.includes(slotTime);
+      });
+
+      res.json(availableSlots);
     } catch (e) {
+      console.error("Erro ao filtrar horários ocupados:", e);
       res.status(500).json([]);
     }
   },

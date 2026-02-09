@@ -53,7 +53,6 @@ export const RecordsModal: React.FC<RecordsModalProps> = ({
         );
         
         alert("Agendamento cancelado com sucesso!");
-        
         onRefresh();
       }
     } catch (error: any) {
@@ -107,12 +106,13 @@ export const RecordsModal: React.FC<RecordsModalProps> = ({
                       </h4>
                       
                       <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tight">
-                        {app.serviceName} • {new Date(app.date).toLocaleDateString('pt-BR')} ÀS {app.time}
+                        {/* Correção de Fuso Horário: Split para evitar o bug do dia anterior */}
+                        {app.serviceName} • {app.date.split('-').reverse().join('/')} ÀS {app.time}
                       </p>
                     </div>
 
                     <div className="flex gap-3">
-                      {/* Botão Editar com trava */}
+                      {/* Botão Editar com trava visual e lógica */}
                       <button 
                         onClick={() => handleOpenEdit(app)}
                         disabled={isActionDisabled}
@@ -126,7 +126,7 @@ export const RecordsModal: React.FC<RecordsModalProps> = ({
                         <Pencil size={18} />
                       </button>
                       
-                      {/* Botão Cancelar com trava */}
+                      {/* Botão Cancelar com trava visual e lógica */}
                       <button 
                         onClick={() => handleCancel(app.id)}
                         disabled={loadingId === app.id || isActionDisabled}
