@@ -84,6 +84,7 @@ export const SuccessStep: React.FC<SuccessStepProps> = ({ appointment }) => {
               {[1, 2, 3, 4, 5].map((star) => (
                 <button
                   key={star}
+                  type="button"
                   disabled={isSubmitting}
                   onClick={() => setRating(star)}
                   onMouseEnter={() => setHoverRating(star)}
@@ -99,15 +100,24 @@ export const SuccessStep: React.FC<SuccessStepProps> = ({ appointment }) => {
             </div>
             {rating > 0 && (
               <div className="animate-fade-in space-y-4">
-                <textarea
-                  disabled={isSubmitting}
-                  placeholder="Gostaria de deixar uma sugestão? (Opcional)"
-                  className="w-full p-4 bg-gray-50 border-2 border-gray-100 rounded-2xl text-sm font-bold text-ibicuitinga-navy outline-none focus:border-ibicuitinga-yellow resize-none disabled:opacity-50"
-                  rows={2}
-                  value={feedback}
-                  onChange={(e) => setFeedback(e.target.value)}
-                />
+                <div className="relative">
+                  <textarea
+                    disabled={isSubmitting}
+                    placeholder="Gostaria de deixar uma sugestão? (Opcional)"
+                    className="w-full p-4 bg-gray-50 border-2 border-gray-100 rounded-2xl text-sm font-bold text-ibicuitinga-navy outline-none focus:border-ibicuitinga-yellow resize-none disabled:opacity-50"
+                    rows={3}
+                    value={feedback}
+                    maxLength={500}
+                    onChange={(e) => setFeedback(e.target.value)}
+                  />
+                  {/* Contador de caracteres */}
+                  <div className="text-[10px] font-black text-gray-400 text-right pr-2 mt-1 uppercase">
+                    {feedback.length} / 500 caracteres
+                  </div>
+                </div>
+
                 <button
+                  type="button"
                   onClick={handleRatingSubmit}
                   disabled={isSubmitting}
                   className="bg-ibicuitinga-navy text-ibicuitinga-yellow px-6 py-3 rounded-xl font-black text-xs uppercase flex items-center gap-2 mx-auto disabled:opacity-70 transition-all hover:bg-ibicuitinga-royalBlue"
