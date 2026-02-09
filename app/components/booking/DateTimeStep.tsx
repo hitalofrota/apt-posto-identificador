@@ -36,7 +36,6 @@ export const DateTimeStep: React.FC<DateTimeStepProps> = ({
 }) => {
   const [calendarMonth, setCalendarMonth] = useState(startOfMonth(new Date()));
   const [slots, setSlots] = useState<TimeSlot[]>([]);
-  
   const [loading, setLoading] = useState(false);
 
   const weekDays = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
@@ -73,6 +72,21 @@ export const DateTimeStep: React.FC<DateTimeStepProps> = ({
     const today = startOfToday();
     const dateStr = format(day, "yyyy-MM-dd");
     return isBefore(day, today) || FERIADOS.includes(dateStr);
+  };
+
+  const isTimePassed = (slotTime: string) => {
+    if (!selectedDate || !isSameDay(selectedDate, new Date())) return false;
+
+    const now = new Date();
+    const currentHour = now.getHours();
+    const currentMinute = now.getMinutes();
+    
+    const [slotHour, slotMinute] = slotTime.split(':').map(Number);
+
+    if (slotHour < currentHour) return true;
+    if (slotHour === currentHour && slotMinute <= currentMinute) return true;
+    
+    return false;
   };
 
   return (
@@ -156,23 +170,28 @@ export const DateTimeStep: React.FC<DateTimeStepProps> = ({
           ) : (
             <div className="grid grid-cols-4 gap-3">
               {slots.length > 0 ? (
-                slots.map(slot => (
-                  <button 
-                    key={slot.time} 
-                    type="button"
-                    disabled={!slot.available} 
-                    onClick={() => setSelectedTime(slot.time)}
-                    className={`
-                      py-3 rounded-2xl font-black text-sm transition-all
-                      ${selectedTime === slot.time 
-                        ? "bg-ibicuitinga-royalBlue text-white shadow-md scale-105" 
-                        : "bg-gray-50 text-ibicuitinga-navy hover:bg-gray-200 disabled:opacity-20 disabled:grayscale"
-                      }
-                    `}
-                  >
-                    {slot.time}
-                  </button>
-                ))
+                slots.map(slot => {
+                  const isPast = isTimePassed(slot.time);
+                  const isButtonDisabled = !slot.available || isPast;
+
+                  return (
+                    <button 
+                      key={slot.time} 
+                      type="button"
+                      disabled={isButtonDisabled} 
+                      onClick={() => setSelectedTime(slot.time)}
+                      className={`
+                        py-3 rounded-2xl font-black text-sm transition-all
+                        ${selectedTime === slot.time 
+                          ? "bg-ibicuitinga-royalBlue text-white shadow-md scale-105" 
+                          : "bg-gray-50 text-ibicuitinga-navy hover:bg-gray-200 disabled:opacity-20 disabled:grayscale"
+                        }
+                      `}
+                    >
+                      {slot.time}
+                    </button>
+                  );
+                })
               ) : (
                 <div className="col-span-full text-center py-4 text-gray-400 font-bold">
                   Nenhum horário disponível nesta data.
