@@ -1,8 +1,9 @@
 import React, { useState } from "react";
-import { Check, MessageCircle, Printer, Star, Send, Loader2 } from "lucide-react";
+import { Star, Send, Loader2 } from "lucide-react";
 import { Appointment } from "../../types";
-import { generateWhatsAppLink, rateAppointment } from "../../services/scheduler";
+import { rateAppointment } from "../../services/scheduler";
 import { Link } from "react-router-dom";
+import { ReceiptCard } from "./ReceiptCard";
 
 interface SuccessStepProps {
   appointment: Appointment;
@@ -32,49 +33,11 @@ export const SuccessStep: React.FC<SuccessStepProps> = ({ appointment }) => {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <div className="bg-white p-10 rounded-[3rem] shadow-2xl border-t-8 border-ibicuitinga-lightGreen text-center space-y-8">
-        <div className="w-20 h-20 bg-ibicuitinga-lightGreen rounded-3xl flex items-center justify-center mx-auto text-white shadow-lg animate-bounce">
-          <Check size={48} strokeWidth={3} />
-        </div>
-        
-        <div>
-          <h2 className="text-3xl font-black text-ibicuitinga-navy tracking-tighter uppercase leading-tight">
-            Agendamento Realizado!
-          </h2>
-          <p className="text-gray-400 font-bold mt-2">
-            Salve o protocolo abaixo para sua segurança.
-          </p>
-        </div>
+      {/* Componente do Comprovante Reutilizável */}
+      <ReceiptCard appointment={appointment} />
 
-        <div className="bg-gray-50 p-6 rounded-[2rem] border-4 border-dashed border-gray-100">
-          <p className="text-[10px] font-black text-gray-300 uppercase tracking-[0.3em]">
-            Protocolo Oficial
-          </p>
-          <p className="text-4xl font-black text-ibicuitinga-navy tracking-widest mt-2">
-            {appointment.protocol}
-          </p>
-        </div>
-
-        <div className="grid gap-3">
-          <a
-            href={generateWhatsAppLink(appointment)}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="bg-ibicuitinga-lightGreen text-white py-4 rounded-2xl font-black shadow-lg flex items-center justify-center gap-2 hover:scale-105 transition"
-          >
-            <MessageCircle size={20} /> Salvar no WhatsApp
-          </a>
-          <button
-            onClick={() => window.print()}
-            className="bg-gray-100 text-gray-600 py-4 rounded-2xl font-black flex items-center justify-center gap-2 hover:bg-gray-200 transition"
-          >
-            <Printer size={20} /> Imprimir Comprovante
-          </button>
-        </div>
-      </div>
-
-      {/* Pesquisa de Satisfação Integrada */}
-      <div className="bg-white p-8 rounded-[2.5rem] shadow-xl border-2 border-ibicuitinga-yellow/20">
+      {/* Pesquisa de Satisfação - Ocultada na impressão via classe .no-print no ReceiptCard */}
+      <div className="bg-white p-8 rounded-[2.5rem] shadow-xl border-2 border-ibicuitinga-yellow/20 no-print">
         {!ratingSubmitted ? (
           <div className="text-center space-y-4">
             <h4 className="font-black text-ibicuitinga-navy uppercase text-sm tracking-widest">
@@ -98,6 +61,7 @@ export const SuccessStep: React.FC<SuccessStepProps> = ({ appointment }) => {
                 </button>
               ))}
             </div>
+            
             {rating > 0 && (
               <div className="animate-fade-in space-y-4">
                 <div className="relative">
@@ -110,7 +74,6 @@ export const SuccessStep: React.FC<SuccessStepProps> = ({ appointment }) => {
                     maxLength={500}
                     onChange={(e) => setFeedback(e.target.value)}
                   />
-                  {/* Contador de caracteres */}
                   <div className="text-[10px] font-black text-gray-400 text-right pr-2 mt-1 uppercase">
                     {feedback.length} / 500 caracteres
                   </div>
@@ -139,7 +102,7 @@ export const SuccessStep: React.FC<SuccessStepProps> = ({ appointment }) => {
         )}
       </div>
 
-      <div className="text-center">
+      <div className="text-center no-print">
         <Link to="/" className="text-ibicuitinga-royalBlue font-black uppercase text-[10px] tracking-widest hover:underline">
           Voltar ao Início
         </Link>
