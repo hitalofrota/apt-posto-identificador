@@ -2,23 +2,18 @@ import React from "react";
 import { Check, MessageCircle, Printer, Calendar, Clock, User, Fingerprint, FileText } from "lucide-react";
 import { Appointment } from "../../types";
 import { generateWhatsAppLink } from "../../services/scheduler";
+import { displayDate, toISODate } from "../../utils/dateUtils";
 
 interface ReceiptCardProps {
   appointment: Appointment;
 }
 
 export const ReceiptCard: React.FC<ReceiptCardProps> = ({ appointment }) => {
-  const formatDate = (dateString: string) => {
-    try {
-      const [year, month, day] = dateString.split('-');
-      return `${day}/${month}/${year}`;
-    } catch (e) {
-      return dateString;
-    }
-  };
-
-  const today = new Date().toLocaleDateString('pt-BR');
-  const formattedAppointmentDate = formatDate(appointment.date);
+  // Padronização: Utilizamos displayDate do helper para formatar a data do agendamento
+  const formattedAppointmentDate = displayDate(appointment.date);
+  
+  // Padronização: Geramos a data de emissão no formato brasileiro localmente
+  const today = displayDate(toISODate(new Date()));
 
   return (
     <>
@@ -54,7 +49,6 @@ export const ReceiptCard: React.FC<ReceiptCardProps> = ({ appointment }) => {
       `}} />
 
       <div id="printable-receipt" className="bg-white p-8 rounded-[3rem] shadow-2xl border-t-8 border-ibicuitinga-lightGreen text-center space-y-6">
-        {/* Ícone de Sucesso */}
         <div className="space-y-4">
           <div className="w-16 h-16 bg-ibicuitinga-lightGreen rounded-2xl flex items-center justify-center mx-auto text-white shadow-md check-container">
             <Check size={40} strokeWidth={3} />
@@ -64,16 +58,13 @@ export const ReceiptCard: React.FC<ReceiptCardProps> = ({ appointment }) => {
           </h2>
         </div>
 
-        {/* Protocolo */}
         <div className="bg-gray-50 p-5 rounded-2xl border-2 border-dashed border-gray-200">
           <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Protocolo Oficial</p>
           <p className="text-3xl font-black text-ibicuitinga-navy tracking-tight">{appointment.protocol}</p>
         </div>
 
-        {/* Informações do Agendamento */}
         <div className="grid grid-cols-1 gap-4 text-left border-y border-gray-100 py-6">
           
-          {/* Nome */}
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-gray-50 rounded-full flex items-center justify-center text-ibicuitinga-navy border border-gray-100">
               <User size={20} />
@@ -84,7 +75,6 @@ export const ReceiptCard: React.FC<ReceiptCardProps> = ({ appointment }) => {
             </div>
           </div>
 
-          {/* Serviço */}
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-gray-50 rounded-full flex items-center justify-center text-ibicuitinga-navy border border-gray-100">
               <Fingerprint size={20} />
@@ -95,7 +85,6 @@ export const ReceiptCard: React.FC<ReceiptCardProps> = ({ appointment }) => {
             </div>
           </div>
 
-          {/* Data e Hora (Formato Brasileiro) */}
           <div className="grid grid-cols-2 gap-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-gray-50 rounded-full flex items-center justify-center text-ibicuitinga-navy border border-gray-100">
@@ -118,7 +107,6 @@ export const ReceiptCard: React.FC<ReceiptCardProps> = ({ appointment }) => {
             </div>
           </div>
 
-          {/* Registro do sistema */}
           <div className="flex items-center gap-3 pt-2 border-t border-gray-50 mt-2">
             <div className="w-10 h-10 bg-gray-50 rounded-full flex items-center justify-center text-gray-400 border border-gray-100">
               <FileText size={18} />
@@ -130,12 +118,10 @@ export const ReceiptCard: React.FC<ReceiptCardProps> = ({ appointment }) => {
           </div>
         </div>
 
-        {/* Aviso */}
         <p className="text-[9px] text-gray-400 font-bold uppercase px-4 leading-relaxed">
           Para o atendimento, é obrigatório apresentar este comprovante e um documento oficial com foto.
         </p>
 
-        {/* Botões (Não saem na impressão) */}
         <div className="grid gap-3 no-print pt-4">
           <a
             href={generateWhatsAppLink(appointment)}

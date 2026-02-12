@@ -8,12 +8,15 @@ import {
   isSameDay, 
   isBefore, 
   startOfToday, 
-  getDay 
+  getDay,
+  getHours,
+  getMinutes
 } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { ChevronLeft, ChevronRight, Clock, Loader2 } from "lucide-react";
 import { getSlotsForDate } from "../../services/scheduler";
 import { TimeSlot } from "../../types";
+import { toISODate } from "../../utils/dateUtils";
 
 const FERIADOS = [
   "2026-01-01", 
@@ -49,7 +52,8 @@ export const DateTimeStep: React.FC<DateTimeStepProps> = ({
 
       setLoading(true);
       try {
-        const data = await getSlotsForDate(format(selectedDate, "yyyy-MM-dd"));
+        // Padronização: toISODate garante YYYY-MM-DD para a API
+        const data = await getSlotsForDate(toISODate(selectedDate));
         setSlots(Array.isArray(data) ? data : []);
       } catch (error) {
         console.error("Erro ao carregar slots:", error);
@@ -70,16 +74,18 @@ export const DateTimeStep: React.FC<DateTimeStepProps> = ({
 
   const isDateDisabled = (day: Date) => {
     const today = startOfToday();
-    const dateStr = format(day, "yyyy-MM-dd");
+    const dateStr = toISODate(day);
     return isBefore(day, today) || FERIADOS.includes(dateStr);
   };
 
   const isTimePassed = (slotTime: string) => {
+    // Só validamos horários passados se a data selecionada for HOJE
     if (!selectedDate || !isSameDay(selectedDate, new Date())) return false;
 
     const now = new Date();
-    const currentHour = now.getHours();
-    const currentMinute = now.getMinutes();
+    // Pendência corrigida: Usando date-fns para extrair horas e minutos locais
+    const currentHour = getHours(now);
+    const currentMinute = getMinutes(now);
     
     const [slotHour, slotMinute] = slotTime.split(':').map(Number);
 

@@ -19,6 +19,7 @@ import {
   ResponsiveContainer, 
   Cell 
 } from "recharts";
+import { getTodayStr } from "../../utils/dateUtils";
 
 interface DashboardProps {
   appointments: any[];
@@ -41,7 +42,7 @@ export const DashboardTab: React.FC<DashboardProps> = ({
   resetFilters,
   setDrilldownType
 }) => {
-  const today = new Date().toISOString().split('T')[0];
+  const today = getTodayStr();
 
   const stats = [
     { 
@@ -106,8 +107,6 @@ export const DashboardTab: React.FC<DashboardProps> = ({
 
   return (
     <div className="space-y-8 animate-fade-in">
-      
-      {/* GRID DE CARDS SUPERIORES */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {stats.map((stat, index) => (
           <div 
@@ -132,7 +131,6 @@ export const DashboardTab: React.FC<DashboardProps> = ({
         ))}
       </div>
 
-      {/* SEÇÃO DE DEMANDA */}
       <div className="bg-white p-8 rounded-[3rem] shadow-sm border border-gray-100">
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-10 gap-6">
           <div className="flex items-center gap-4">

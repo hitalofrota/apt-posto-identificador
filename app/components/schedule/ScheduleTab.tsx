@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Calendar, Clock, Info, Lock, Unlock } from 'lucide-react';
-import { format, parseISO } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import { getTodayStr, toMonthYear, displayDate } from "../../utils/dateUtils";
 
 interface ScheduleTabProps {
   blockedDates: string[];
@@ -20,8 +19,9 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({
   actions,
   checkMonthBlocked
 }) => {
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
-  const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().substring(0, 7));
+  // Padronização: Estados iniciais utilizando os helpers locais
+  const [selectedDate, setSelectedDate] = useState(getTodayStr());
+  const [selectedMonth, setSelectedMonth] = useState(toMonthYear(new Date()));
 
   const timeSlots = [
     '08:00', '08:20', '08:40', '09:00', '09:20', '09:40',
@@ -34,7 +34,7 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({
   return (
     <div className="space-y-8 animate-fade-in pb-10">
       
-      {/* SEÇÃO DE CONTROLES - AJUSTE DE TAMANHO E CENTRALIZAÇÃO */}
+      {/* SEÇÃO DE CONTROLES */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         
         {/* Card Controle Diário */}
@@ -51,7 +51,6 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({
                 className="w-full bg-gray-50 border-2 border-gray-100 rounded-2xl py-3 px-4 font-bold text-ibicuitinga-navy outline-none focus:border-ibicuitinga-royalBlue text-sm"
               />
             </div>
-            {/* Botão com tamanho reduzido (w-32) e fonte menor (text-[9px]) */}
             <button 
               onClick={() => actions.handleBlockDate(selectedDate)}
               className={`w-32 py-3.5 rounded-2xl font-black uppercase text-[9px] tracking-widest shadow-md transition-all active:scale-95 whitespace-nowrap shrink-0 ${
@@ -77,7 +76,6 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({
                 className="w-full bg-gray-50 border-2 border-gray-100 rounded-2xl py-3 px-4 font-bold text-ibicuitinga-navy outline-none focus:border-ibicuitinga-royalBlue text-sm"
               />
             </div>
-            {/* Botão com tamanho reduzido (w-32) e fonte menor (text-[9px]) */}
             <button 
               onClick={() => actions.handleBlockMonth(selectedMonth, isMonthBlocked)}
               className={`w-32 py-3.5 rounded-2xl font-black uppercase text-[9px] tracking-widest shadow-md transition-all active:scale-95 whitespace-nowrap shrink-0 ${
@@ -94,7 +92,8 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({
       <div className="bg-white p-10 rounded-[3rem] shadow-sm border border-gray-100">
         <div className="flex justify-between items-center mb-10">
           <h3 className="text-xs font-black text-gray-400 uppercase tracking-[0.2em]">
-            Controle de Horários: {format(parseISO(selectedDate), "dd/MM/yyyy")}
+            {/* Ajuste de Perfeição: Usando displayDate para consistência total da UI */}
+            Controle de Horários: {displayDate(selectedDate)}
           </h3>
           <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${
             isDateBlocked ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'

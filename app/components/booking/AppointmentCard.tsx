@@ -10,6 +10,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { parseISO, isBefore, startOfToday, differenceInHours } from "date-fns";
+import { displayDate } from "../../utils/dateUtils";
 
 interface Props {
   app: Appointment;
@@ -80,7 +81,7 @@ export const AppointmentCard: React.FC<Props> = ({ app, onCancel }) => {
               {app.time}
             </p>
             <p className="text-[10px] font-black text-gray-400 uppercase flex items-center justify-center gap-1">
-              <Calendar size={12} /> {app.date.split("-").reverse().join("/")}
+              <Calendar size={12} /> {displayDate(app.date)}
             </p>
           </div>
         </div>

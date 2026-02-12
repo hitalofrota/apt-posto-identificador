@@ -3,6 +3,7 @@ import { X, Pencil, Ban, Loader2 } from 'lucide-react';
 import { Appointment } from '../../types';
 import api from '../../services/api';
 import { EditRecordModal } from './EditRecordModal';
+import { displayDate } from "../../utils/dateUtils";
 
 interface RecordsModalProps {
   isOpen: boolean;
@@ -107,12 +108,11 @@ export const RecordsModal: React.FC<RecordsModalProps> = ({
                       </h4>
                       
                       <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tight">
-                        {app.serviceName} • {new Date(app.date).toLocaleDateString('pt-BR')} ÀS {app.time}
+                        {app.serviceName} • {displayDate(app.date)} ÀS {app.time}
                       </p>
                     </div>
 
                     <div className="flex gap-3">
-                      {/* Botão Editar com trava */}
                       <button 
                         onClick={() => handleOpenEdit(app)}
                         disabled={isActionDisabled}
@@ -126,7 +126,6 @@ export const RecordsModal: React.FC<RecordsModalProps> = ({
                         <Pencil size={18} />
                       </button>
                       
-                      {/* Botão Cancelar com trava */}
                       <button 
                         onClick={() => handleCancel(app.id)}
                         disabled={loadingId === app.id || isActionDisabled}

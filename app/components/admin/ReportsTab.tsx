@@ -5,6 +5,7 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { SERVICES } from "../../constants";
 import { Appointment } from "../../types";
+import { displayDate, toISODate } from "../../utils/dateUtils";
 
 interface ReportsTabProps {
   appointments: Appointment[];
@@ -43,7 +44,7 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({ appointments }) => {
 
     if (reportDate) {
       filtered = filtered.filter((app) => app.date === reportDate);
-      doc.text(`Filtro: Data específica ${format(parseISO(reportDate), "dd/MM/yyyy")}`, 14, 38);
+      doc.text(`Filtro: Data específica ${displayDate(reportDate)}`, 14, 38);
     }
 
     const combinedMonthYear = reportMonthPart ? `${reportYearPart}-${reportMonthPart}` : "";
@@ -63,7 +64,7 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({ appointments }) => {
       app.protocol,
       app.citizen.name,
       app.serviceName,
-      `${format(parseISO(app.date), "dd/MM/yyyy")} ${app.time}`,
+      `${displayDate(app.date)} ${app.time}`,
       app.status === "scheduled" ? "Ativo" : app.status === "cancelled" ? "Cancelado" : "Concluído",
     ]);
 
@@ -75,7 +76,7 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({ appointments }) => {
       headStyles: { fillColor: [23, 38, 93] },
     });
 
-    doc.save(`relatorio-agendamentos-${format(new Date(), "yyyy-MM-dd")}.pdf`);
+    doc.save(`relatorio-agendamentos-${toISODate(new Date())}.pdf`);
   };
 
   return (
@@ -93,7 +94,6 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({ appointments }) => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 bg-gray-50 p-6 rounded-[2rem] border border-gray-100">
-        {/* Filtro por Dia */}
         <div>
           <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 block">Por Dia</label>
           <input
@@ -107,7 +107,6 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({ appointments }) => {
           />
         </div>
 
-        {/* Filtro por Mês */}
         <div>
           <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 block">Por Mês</label>
           <div className="flex gap-2">
@@ -136,7 +135,6 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({ appointments }) => {
           </div>
         </div>
 
-        {/* Filtro por Serviço */}
         <div>
           <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 block">Por Serviço</label>
           <select

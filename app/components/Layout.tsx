@@ -1,14 +1,16 @@
-
 import React from 'react';
-import { Menu, X, Shield } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { ORG_NAME, CITY_NAME } from '../constants';
+import { format } from 'date-fns';
 
 export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
   const location = useLocation();
 
   const brasaoUrl = "https://upload.wikimedia.org/wikipedia/commons/b/b3/Bras%C3%A3o_de_Ibicuitinga.png";
+
+  const currentYear = format(new Date(), 'yyyy');
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
@@ -34,8 +36,8 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
 
           {/* Desktop Nav */}
           <nav className="hidden md:flex items-center gap-6 text-sm font-bold">
-            <Link to="/" className="hover:text-ibicuitinga-yellow transition-colors">Início</Link>
-            <Link to="/meus-agendamentos" className="hover:text-ibicuitinga-yellow transition-colors">Meus Agendamentos</Link>
+            <Link to="/" className={`hover:text-ibicuitinga-yellow transition-colors ${location.pathname === '/' ? 'text-ibicuitinga-yellow' : ''}`}>Início</Link>
+            <Link to="/meus-agendamentos" className={`hover:text-ibicuitinga-yellow transition-colors ${location.pathname === '/meus-agendamentos' ? 'text-ibicuitinga-yellow' : ''}`}>Meus Agendamentos</Link>
             <Link to="/admin" className="bg-ibicuitinga-royalBlue hover:bg-ibicuitinga-skyBlue px-4 py-2 rounded-xl transition-all shadow-md active:scale-95">
               Área Institucional
             </Link>
@@ -70,7 +72,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
         <div className="container mx-auto px-4 text-center space-y-6">
           <div className="flex justify-center mb-4">
             <img
-              src="../public/images/favicon.jpg"
+              src="/images/favicon.jpg"
               alt="Brasão Municipal"
               className="h-20 w-auto brightness-0 invert opacity-40 hover:opacity-100 transition-opacity"
             />
@@ -82,7 +84,8 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
             <div className="flex-1 bg-ibicuitinga-royalBlue rounded-full"></div>
           </div>
           <div className="text-sm">
-            <p className="font-black text-white uppercase tracking-widest">© {new Date().getFullYear()} {ORG_NAME}</p>
+            {/* Uso do currentYear formatado */}
+            <p className="font-black text-white uppercase tracking-widest">© {currentYear} {ORG_NAME}</p>
             <p className="mt-1 font-medium">Prefeitura Municipal de Ibicuitinga - Ceará</p>
           </div>
         </div>
