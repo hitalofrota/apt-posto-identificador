@@ -28,3 +28,9 @@ docker compose up --build
 # Rodar ngrok
 ngrok http 80
 
+# Verificar o banco de dados:
+npx prisma studio
+
+# Derrubar todos os containers do docker:
+docker stop $(docker ps -q)
+

@@ -3,7 +3,21 @@ import { generateProtocol, mapAppointment } from '../utils/mapper.js';
 
 const prisma = new PrismaClient();
 
-// Função auxiliar para verificar se o CEP pertence a Ibicuitinga (62955-000 a 62959-999)
+// Função auxiliar para calcular o status em tempo real baseado na data/hora
+const computeStatus = (app) => {
+  if (app.status === 'cancelled') return 'cancelled';
+
+  const now = new Date();
+  // Combina data (YYYY-MM-DD) e hora (HH:mm) para comparação precisa
+  const appointmentDateTime = new Date(`${app.date}T${app.time}:00`);
+
+  if (appointmentDateTime < now) {
+    return 'completed';
+  }
+
+  return 'scheduled';
+};
+
 const isLocalCity = (cep) => {
   if (!cep) return false;
   const cleanCep = cep.replace(/\D/g, "");
@@ -16,7 +30,11 @@ export const appointmentService = {
     const apps = await prisma.appointment.findMany({ 
       orderBy: { date: 'desc' } 
     });
-    return apps.map(mapAppointment);
+    // Aplica a lógica de status dinâmico antes de mapear para o frontend
+    return apps.map(app => ({
+      ...app,
+      status: computeStatus(app)
+    })).map(mapAppointment);
   },
 
   async getByCpf(cpf) {
@@ -25,7 +43,11 @@ export const appointmentService = {
       where: { citizenCpf: cleanCpf },
       orderBy: { date: 'desc' }
     });
-    return apps.map(mapAppointment);
+    
+    return apps.map(app => ({
+      ...app,
+      status: computeStatus(app)
+    })).map(mapAppointment);
   },
 
   async create(data) {
@@ -36,11 +58,9 @@ export const appointmentService = {
 
     const sanitizedDate = date?.trim().substring(0, 10);
     const sanitizedTime = time?.trim().substring(0, 5);
-
     const cleanCep = citizenCep?.replace(/\D/g, "");
-    if (!cleanCep || cleanCep.length !== 8) {
-      throw new Error("CEP_INVALIDO");
-    }
+    
+    if (!cleanCep || cleanCep.length !== 8) throw new Error("CEP_INVALIDO");
 
     const cleanCpf = citizenCpf?.replace(/\D/g, "");
     const cleanPhone = citizenPhone?.replace(/\D/g, "");
@@ -50,17 +70,11 @@ export const appointmentService = {
         where: {
           date: sanitizedDate, 
           status: 'scheduled',
-          NOT: {
-            citizenCep: {
-              startsWith: '6295',
-            }
-          }
+          NOT: { citizenCep: { startsWith: '6295' } }
         }
       });
 
-      if (activeAppointmentsCount >= 2) { 
-        throw new Error("LIMITE_VIZINHO_ATINGIDO");
-      }
+      if (activeAppointmentsCount >= 2) throw new Error("LIMITE_VIZINHO_ATINGIDO");
     }
 
     const newAppointment = await prisma.appointment.create({
@@ -85,25 +99,17 @@ export const appointmentService = {
   },
 
   async update(id, data) {
-    const { date, time, citizenName, citizenPhone, citizenEmail, citizenCpf, citizenCep, ...rest } = data;
+    const { date, time, ...rest } = data;
     
-    const sanitizedDate = date ? date.trim().substring(0, 10) : undefined;
-    const sanitizedTime = time ? time.trim().substring(0, 5) : undefined;
+    const updateData = { ...rest };
+    if (date) updateData.date = date.trim().substring(0, 10);
+    if (time) updateData.time = time.trim().substring(0, 5);
 
-    const updatedAppointment = await prisma.appointment.update({
+    const updated = await prisma.appointment.update({
       where: { id },
-      data: {
-        ...rest,
-        ...(sanitizedDate && { date: sanitizedDate }),
-        ...(sanitizedTime && { time: sanitizedTime }),
-        ...(citizenName && { citizenName }),
-        ...(citizenPhone && { citizenPhone: citizenPhone.replace(/\D/g, "") }),
-        ...(citizenEmail && { citizenEmail }),
-        ...(citizenCpf && { citizenCpf: citizenCpf.replace(/\D/g, "") }),
-        ...(citizenCep && { citizenCep: citizenCep.replace(/\D/g, "") })
-      }
+      data: updateData
     });
 
-    return mapAppointment(updatedAppointment);
+    return mapAppointment(updated);
   }
 };
