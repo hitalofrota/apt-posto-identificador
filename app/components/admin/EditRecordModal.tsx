@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Save, Ban, Loader2 } from 'lucide-react';
+import { X, Save, Loader2 } from 'lucide-react';
 import { Appointment } from '../../types';
 import api from '../../services/api';
 
@@ -27,6 +27,7 @@ export const EditRecordModal: React.FC<EditRecordModalProps> = ({
 
   useEffect(() => {
     if (appointment && isOpen) {
+      // Ajustado para ler da nova estrutura mapeada (appointment.citizen)
       setFormData({
         name: appointment.citizen.name,
         phone: appointment.citizen.phone || '',
@@ -42,12 +43,13 @@ export const EditRecordModal: React.FC<EditRecordModalProps> = ({
   const handleSave = async () => {
     setLoading(true);
     try {
+      // Payload organizado conforme o backend espera (appointmentService.update)
       const payload = {
-        date: formData.date,
-        time: formData.time,
+        date: formData.date.trim(),
+        time: formData.time.trim(),
         serviceName: formData.serviceName,
-        citizenName: formData.name,
-        citizenPhone: formData.phone
+        citizenName: formData.name.trim(),
+        citizenPhone: formData.phone.replace(/\D/g, "") // Envia apenas números
       };
 
       const response = await api.put(`/appointments/${appointment.id}`, payload);
@@ -59,8 +61,7 @@ export const EditRecordModal: React.FC<EditRecordModalProps> = ({
       }
     } catch (error: any) {
       console.error("Erro ao atualizar:", error.response?.data || error.message);
-      onRefresh();
-      onClose();
+      alert("Erro ao salvar as alterações. Verifique os dados e tente novamente.");
     } finally {
       setLoading(false);
     }
@@ -79,6 +80,7 @@ export const EditRecordModal: React.FC<EditRecordModalProps> = ({
           <p className="text-sm font-black text-ibicuitinga-royalBlue mt-2 uppercase tracking-widest">{appointment.protocol}</p>
 
           <div className="mt-10 space-y-5 text-left">
+            {/* Nome do Cidadão */}
             <div className="space-y-1.5">
               <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.15em] ml-1">Nome do Cidadão</label>
               <input 
@@ -90,6 +92,7 @@ export const EditRecordModal: React.FC<EditRecordModalProps> = ({
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              {/* Telefone */}
               <div className="space-y-1.5 text-left">
                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.15em] ml-1">Telefone</label>
                 <input 
@@ -97,8 +100,10 @@ export const EditRecordModal: React.FC<EditRecordModalProps> = ({
                   value={formData.phone}
                   onChange={(e) => setFormData({...formData, phone: e.target.value})}
                   className="w-full bg-gray-50 border-2 border-gray-100 rounded-2xl p-4 font-bold text-ibicuitinga-navy focus:border-ibicuitinga-royalBlue outline-none"
+                  placeholder="(00) 00000-0000"
                 />
               </div>
+              {/* Serviço */}
               <div className="space-y-1.5 text-left">
                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.15em] ml-1">Serviço</label>
                 <select 
@@ -115,6 +120,7 @@ export const EditRecordModal: React.FC<EditRecordModalProps> = ({
             </div>
 
             <div className="grid grid-cols-2 gap-5 text-left">
+              {/* Data */}
               <div className="space-y-1.5">
                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.15em] ml-1">Data</label>
                 <input 
@@ -124,6 +130,7 @@ export const EditRecordModal: React.FC<EditRecordModalProps> = ({
                   className="w-full bg-gray-50 border-2 border-gray-100 rounded-2xl p-4 font-bold text-ibicuitinga-navy outline-none"
                 />
               </div>
+              {/* Horário */}
               <div className="space-y-1.5">
                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.15em] ml-1">Horário</label>
                 <input 

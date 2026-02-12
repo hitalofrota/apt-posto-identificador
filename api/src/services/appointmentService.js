@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client';
-import { generateProtocol } from '../utils/mapper.js';
+import { generateProtocol, mapAppointment } from '../utils/mapper.js';
 
 const prisma = new PrismaClient();
 
@@ -13,17 +13,19 @@ const isLocalCity = (cep) => {
 
 export const appointmentService = {
   async getAll() {
-    return await prisma.appointment.findMany({ 
+    const apps = await prisma.appointment.findMany({ 
       orderBy: { date: 'desc' } 
     });
+    return apps.map(mapAppointment);
   },
 
   async getByCpf(cpf) {
     const cleanCpf = cpf.replace(/\D/g, "");
-    return await prisma.appointment.findMany({
+    const apps = await prisma.appointment.findMany({
       where: { citizenCpf: cleanCpf },
       orderBy: { date: 'desc' }
     });
+    return apps.map(mapAppointment);
   },
 
   async create(data) {
@@ -31,6 +33,9 @@ export const appointmentService = {
       date, time, citizenName, citizenPhone, citizenEmail, 
       citizenCpf, citizenHasCpf, citizenCep, serviceId, serviceName, ...rest 
     } = data;
+
+    const sanitizedDate = date?.trim().substring(0, 10);
+    const sanitizedTime = time?.trim().substring(0, 5);
 
     const cleanCep = citizenCep?.replace(/\D/g, "");
     if (!cleanCep || cleanCep.length !== 8) {
@@ -43,7 +48,7 @@ export const appointmentService = {
     if (!isLocalCity(cleanCep)) {
       const activeAppointmentsCount = await prisma.appointment.count({
         where: {
-          date: date, 
+          date: sanitizedDate, 
           status: 'scheduled',
           NOT: {
             citizenCep: {
@@ -58,14 +63,14 @@ export const appointmentService = {
       }
     }
 
-    return await prisma.appointment.create({
+    const newAppointment = await prisma.appointment.create({
       data: {
         ...rest,
         serviceId: String(serviceId),
         serviceName,
-        date,
-        time,
-        protocol: generateProtocol(date, time),
+        date: sanitizedDate,
+        time: sanitizedTime,
+        protocol: generateProtocol(sanitizedDate, sanitizedTime),
         citizenName,
         citizenPhone: cleanPhone,
         citizenEmail: citizenEmail || null,
@@ -75,14 +80,22 @@ export const appointmentService = {
         status: 'scheduled'
       }
     });
+
+    return mapAppointment(newAppointment);
   },
 
   async update(id, data) {
-    const { citizenName, citizenPhone, citizenEmail, citizenCpf, citizenCep, ...rest } = data;
-    return await prisma.appointment.update({
+    const { date, time, citizenName, citizenPhone, citizenEmail, citizenCpf, citizenCep, ...rest } = data;
+    
+    const sanitizedDate = date ? date.trim().substring(0, 10) : undefined;
+    const sanitizedTime = time ? time.trim().substring(0, 5) : undefined;
+
+    const updatedAppointment = await prisma.appointment.update({
       where: { id },
       data: {
         ...rest,
+        ...(sanitizedDate && { date: sanitizedDate }),
+        ...(sanitizedTime && { time: sanitizedTime }),
         ...(citizenName && { citizenName }),
         ...(citizenPhone && { citizenPhone: citizenPhone.replace(/\D/g, "") }),
         ...(citizenEmail && { citizenEmail }),
@@ -90,5 +103,7 @@ export const appointmentService = {
         ...(citizenCep && { citizenCep: citizenCep.replace(/\D/g, "") })
       }
     });
+
+    return mapAppointment(updatedAppointment);
   }
 };
