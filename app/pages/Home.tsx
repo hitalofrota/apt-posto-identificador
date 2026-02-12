@@ -30,7 +30,7 @@ const Home: React.FC = () => {
   return (
     <div className="space-y-12 animate-fade-in pb-10">
       
-      {/* 1. HERO SECTION (ÍMPAR - NAVY) */}
+      {/* 1. HERO SECTION */}
       <div className="relative overflow-hidden rounded-[2.5rem] bg-ibicuitinga-navy text-white shadow-2xl border-b-8 border-ibicuitinga-yellow hero-pattern">
         <div className="relative z-10 p-8 md:p-16 space-y-8">
           <div className="space-y-6">
@@ -52,7 +52,7 @@ const Home: React.FC = () => {
         </div>
       </div>
 
-      {/* 2. REGRAS DE ATENDIMENTO (PAR - LIGHT) */}
+      {/* 2. REGRAS DE ATENDIMENTO */}
       <div className="bg-ibicuitinga-skyBlue/10 border-2 border-ibicuitinga-skyBlue/30 rounded-[3rem] p-8 md:p-12 shadow-sm relative">
         <div className="flex flex-col md:flex-row items-center md:items-start gap-8">
           <div className="bg-ibicuitinga-navy p-5 rounded-3xl shadow-xl text-ibicuitinga-yellow shrink-0">
@@ -82,7 +82,7 @@ const Home: React.FC = () => {
         </div>
       </div>
 
-      {/* 3. DOCUMENTS SECTION (ÍMPAR - NAVY) */}
+      {/* 3. DOCUMENTS SECTION */}
       <div className="bg-ibicuitinga-navy rounded-[3rem] p-8 md:p-12 shadow-2xl border-t-8 border-ibicuitinga-yellow text-white">
         <div className="space-y-8">
           <div className="flex items-center gap-4">
@@ -120,45 +120,53 @@ const Home: React.FC = () => {
         </div>
       </div>
 
-      {/* 4. CONTACT SECTION (PAR - LIGHT) */}
+      {/* 4. CONTACT SECTION */}
       <div className="bg-ibicuitinga-skyBlue/5 border-2 border-ibicuitinga-skyBlue/20 rounded-[3rem] p-8 md:p-12 text-ibicuitinga-navy shadow-sm">
-        <div className="grid lg:grid-cols-2 gap-12 items-stretch">
-          <div className="flex flex-col h-full">
-            <h2 className="text-4xl font-black tracking-tight mb-8">Fale <span className="text-ibicuitinga-royalBlue">Conosco</span></h2>
-            <div className="flex flex-col flex-grow gap-4">
+        <div className="grid lg:grid-cols-2 gap-12 items-start"> {/* Alterado para items-start para evitar esticamento excessivo */}
+          <div className="flex flex-col gap-4 w-full">
+            <h2 className="text-4xl font-black tracking-tight mb-4">Fale <span className="text-ibicuitinga-royalBlue">Conosco</span></h2>
+            
+            <div className="flex flex-col gap-4">
+              {/* WhatsApp Card */}
               <a href={whatsappLink} target="_blank" rel="noopener noreferrer" 
-                 className="flex-grow flex items-center gap-5 bg-white p-6 rounded-3xl border border-gray-100 hover:border-ibicuitinga-lightGreen transition-all group shadow-sm">
-                <div className="bg-ibicuitinga-lightGreen p-4 rounded-2xl text-white group-hover:scale-110 transition-transform">
-                  <Phone size={26} />
+                 className="flex items-center gap-4 bg-white p-5 rounded-3xl border border-gray-100 hover:border-ibicuitinga-lightGreen transition-all group shadow-sm">
+                <div className="bg-ibicuitinga-lightGreen p-4 rounded-2xl text-white group-hover:scale-110 transition-transform shrink-0">
+                  <Phone size={24} />
                 </div>
-                <div>
-                  <p className="text-[10px] font-black uppercase text-gray-400 tracking-widest">WhatsApp</p>
-                  <p className="text-xl md:text-2xl font-black">{CONTACT_INFO.whatsappFormatted}</p>
+                <div className="min-w-0">
+                  <p className="text-[10px] font-black uppercase text-gray-400 tracking-widest mb-0.5">WhatsApp</p>
+                  <p className="text-sm md:text-base font-black whitespace-nowrap">{CONTACT_INFO.whatsappFormatted}</p>
                 </div>
               </a>
 
-              <div className="flex-grow flex items-center gap-5 bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
-                <div className="bg-ibicuitinga-royalBlue p-4 rounded-2xl text-white">
-                  <Mail size={26} />
+              {/* E-mail Card - FORÇADO EM UMA LINHA */}
+              <div className="flex items-center gap-4 bg-white p-5 rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
+                <div className="bg-ibicuitinga-royalBlue p-4 rounded-2xl text-white shrink-0">
+                  <Mail size={24} />
                 </div>
-                <div className="overflow-hidden">
-                  <p className="text-[10px] font-black uppercase text-gray-400 tracking-widest">E-mail Institucional</p>
-                  <p className="text-sm md:text-lg font-black truncate">{CONTACT_INFO.email}</p>
+                <div className="min-w-0">
+                  <p className="text-[10px] font-black uppercase text-gray-400 tracking-widest mb-0.5">E-mail Institucional</p>
+                  {/* text-xs no mobile garante que caiba em telas pequenas sem quebrar */}
+                  <p className="text-[11px] sm:text-xs md:text-sm font-black whitespace-nowrap tracking-tight">
+                    {CONTACT_INFO.email}
+                  </p>
                 </div>
               </div>
 
-              <div className="flex-grow flex items-center gap-5 bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
-                <div className="bg-ibicuitinga-orange p-4 rounded-2xl text-white">
-                  <MapPin size={26} />
+              {/* Endereço Card */}
+              <div className="flex items-center gap-4 bg-white p-5 rounded-3xl border border-gray-100 shadow-sm">
+                <div className="bg-ibicuitinga-orange p-4 rounded-2xl text-white shrink-0">
+                  <MapPin size={24} />
                 </div>
-                <div>
-                  <p className="text-[10px] font-black uppercase text-gray-400 tracking-widest">Endereço</p>
-                  <p className="text-sm md:text-base font-bold leading-tight">{CONTACT_INFO.address}</p>
+                <div className="min-w-0">
+                  <p className="text-[10px] font-black uppercase text-gray-400 tracking-widest mb-0.5">Endereço</p>
+                  <p className="text-xs md:text-sm font-bold leading-tight">{CONTACT_INFO.address}</p>
                 </div>
               </div>
             </div>
           </div>
-          <div className="flex flex-col h-full">
+
+          <div className="w-full">
             <ContactForm />
           </div>
         </div>
