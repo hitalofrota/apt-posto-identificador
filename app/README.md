@@ -28,7 +28,7 @@ docker compose up --build
 # Rodar ngrok
 ngrok http 80
 
-# Verificar o banco de dados:
+# Verificar o banco de dados, tem que abrir dentro da API
 npx prisma studio
 
 # Derrubar todos os containers do docker:
