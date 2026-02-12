@@ -1,21 +1,30 @@
 import { PrismaClient } from '@prisma/client';
 import { generateProtocol, mapAppointment } from '../utils/mapper.js';
+import { toZonedTime, format } from 'date-fns-tz';
 
 const prisma = new PrismaClient();
+const TIMEZONE = 'America/Sao_Paulo';
 
-// Função auxiliar para calcular o status em tempo real baseado na data/hora
-const computeStatus = (app) => {
-  if (app.status === 'cancelled') return 'cancelled';
+const syncAppointmentStatuses = async () => {
+  const agoraBrasilia = toZonedTime(new Date(), TIMEZONE);
+  const dataHoje = format(agoraBrasilia, 'yyyy-MM-dd');
+  const horaHoje = format(agoraBrasilia, 'HH:mm');
 
-  const now = new Date();
-  // Combina data (YYYY-MM-DD) e hora (HH:mm) para comparação precisa
-  const appointmentDateTime = new Date(`${app.date}T${app.time}:00`);
-
-  if (appointmentDateTime < now) {
-    return 'completed';
-  }
-
-  return 'scheduled';
+  await prisma.appointment.updateMany({
+    where: {
+      status: 'scheduled',
+      OR: [
+        { date: { lt: dataHoje } },
+        { 
+          AND: [
+            { date: dataHoje },
+            { time: { lt: horaHoje } }
+          ]
+        }
+      ]
+    },
+    data: { status: 'completed' }
+  });
 };
 
 const isLocalCity = (cep) => {
@@ -27,27 +36,23 @@ const isLocalCity = (cep) => {
 
 export const appointmentService = {
   async getAll() {
+    await syncAppointmentStatuses();
+
     const apps = await prisma.appointment.findMany({ 
       orderBy: { date: 'desc' } 
     });
-    // Aplica a lógica de status dinâmico antes de mapear para o frontend
-    return apps.map(app => ({
-      ...app,
-      status: computeStatus(app)
-    })).map(mapAppointment);
+    return apps.map(app => mapAppointment(app));
   },
 
   async getByCpf(cpf) {
+    await syncAppointmentStatuses();
+
     const cleanCpf = cpf.replace(/\D/g, "");
     const apps = await prisma.appointment.findMany({
       where: { citizenCpf: cleanCpf },
       orderBy: { date: 'desc' }
     });
-    
-    return apps.map(app => ({
-      ...app,
-      status: computeStatus(app)
-    })).map(mapAppointment);
+    return apps.map(app => mapAppointment(app));
   },
 
   async create(data) {
@@ -58,8 +63,15 @@ export const appointmentService = {
 
     const sanitizedDate = date?.trim().substring(0, 10);
     const sanitizedTime = time?.trim().substring(0, 5);
-    const cleanCep = citizenCep?.replace(/\D/g, "");
     
+    const agoraBrasilia = toZonedTime(new Date(), TIMEZONE);
+    const agendamentoDesejado = new Date(`${sanitizedDate}T${sanitizedTime}:00`);
+
+    if (agendamentoDesejado < agoraBrasilia) {
+      throw new Error("DATA_PASSADA");
+    }
+
+    const cleanCep = citizenCep?.replace(/\D/g, "");
     if (!cleanCep || cleanCep.length !== 8) throw new Error("CEP_INVALIDO");
 
     const cleanCpf = citizenCpf?.replace(/\D/g, "");
@@ -73,7 +85,6 @@ export const appointmentService = {
           NOT: { citizenCep: { startsWith: '6295' } }
         }
       });
-
       if (activeAppointmentsCount >= 2) throw new Error("LIMITE_VIZINHO_ATINGIDO");
     }
 
@@ -91,7 +102,7 @@ export const appointmentService = {
         citizenCpf: cleanCpf || null,
         citizenHasCpf: !!citizenHasCpf,
         citizenCep: cleanCep,
-        status: 'scheduled'
+        status: 'scheduled' 
       }
     });
 
@@ -100,7 +111,6 @@ export const appointmentService = {
 
   async update(id, data) {
     const { date, time, ...rest } = data;
-    
     const updateData = { ...rest };
     if (date) updateData.date = date.trim().substring(0, 10);
     if (time) updateData.time = time.trim().substring(0, 5);
