@@ -74,7 +74,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
             <img
               src="/images/favicon.jpg"
               alt="Brasão Municipal"
-              className="h-20 w-auto brightness-0 invert opacity-40 hover:opacity-100 transition-opacity"
+              className="h-20 w-auto transition-transform hover:scale-110"
             />
           </div>
           <div className="flex justify-center gap-2 max-w-[200px] mx-auto h-2">
@@ -84,9 +84,8 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
             <div className="flex-1 bg-ibicuitinga-royalBlue rounded-full"></div>
           </div>
           <div className="text-sm">
-            {/* Uso do currentYear formatado */}
             <p className="font-black text-white uppercase tracking-widest">© {currentYear} {ORG_NAME}</p>
-            <p className="mt-1 font-medium">Prefeitura Municipal de Ibicuitinga - Ceará</p>
+            <p className="mt-1 font-medium text-white/80">Prefeitura Municipal de Ibicuitinga - Ceará</p>
           </div>
         </div>
       </footer>
