@@ -4,13 +4,19 @@ import { authMiddleware } from '../middlewares/auth.js';
 
 const router = Router();
 
-// --- ROTAS PÚBLICAS
+// --- ROTAS PÚBLICAS (Acesso livre para o cidadão)
+
+router.get('/slots', appointmentController.getSlots); 
+
+// 2. Outras rotas públicas
 router.get('/citizen/:cpf', appointmentController.listByCpf);
 router.post('/', appointmentController.create);
 router.patch('/:id/rate', appointmentController.rate);
-router.get('/', appointmentController.list);
 
-// --- ROTAS PRIVADAS
+// --- ROTAS PRIVADAS (Acesso apenas para Administradores com Token)
+
+router.get('/', appointmentController.list); 
+
 router.put('/:id', appointmentController.update);
 router.delete('/:id', appointmentController.cancel);
 

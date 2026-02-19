@@ -24,22 +24,20 @@ api.interceptors.request.use((config) => {
 });
 
 export const appointmentsApi = {
-  // Rota pública para listar agendamentos e calcular disponibilidade
   getAll: () => api.get<Appointment[]>("/appointments").then(r => r.data),
   
-  // Rota pública para buscar agendamentos de um cidadão específico
+  getAvailableSlots: (date: string) => 
+    api.get(`/appointments/slots?date=${date}`).then(r => r.data),
+
   getByCpf: (cpf: string) => 
     api.get<Appointment[]>(`/appointments/citizen/${cpf.replace(/\D/g, "")}`).then(r => r.data),
   
-  // Rota pública para criação de agendamento
   create: (data: Partial<Appointment>) => 
     api.post<Appointment>("/appointments", data).then(r => r.data),
   
-  // Rotas que geralmente são privadas (precisam de token)
   update: (app: Appointment) => api.put(`/appointments/${app.id}`, app),
   cancel: (id: string) => api.delete(`/appointments/${id}`),
   
-  // Rota de avaliação (pública ou baseada no protocolo)
   rate: (id: string, rating: number, feedback: string) =>
     api.patch<Appointment>(`/appointments/${id}/rate`, { rating, feedback }).then(r => r.data),
 };

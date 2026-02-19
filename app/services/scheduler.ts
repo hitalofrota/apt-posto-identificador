@@ -47,29 +47,13 @@ export const getDailySlots = (dateStr: string): string[] => {
 };
 
 export const getSlotsForDate = async (dateStr: string): Promise<TimeSlot[]> => {
-  const allPossibleSlots = getDailySlots(dateStr);
-  
-  const [appointments, blockedDates, blockedSlots] = await Promise.all([
-    appointmentsApi.getAll(), 
-    blocksApi.getDates(),
-    blocksApi.getSlots()
-  ]);
-
-  const activeDayApps = new Set(
-    appointments
-      .filter(a => a.date === dateStr && a.status !== "cancelled")
-      .map(a => a.time)
-  );
-
-  const isDateBlocked = blockedDates.includes(dateStr);
-  const blockedSlotsSet = new Set(blockedSlots);
-
-  return allPossibleSlots.map(time => ({
-    time,
-    available: !isDateBlocked && 
-               !activeDayApps.has(time) && 
-               !blockedSlotsSet.has(`${dateStr}|${time}`)
-  }));
+  try {
+    const data = await appointmentsApi.getAvailableSlots(dateStr);
+    return Array.isArray(data) ? data : [];
+  } catch (error) {
+    console.error("Erro ao carregar slots:", error);
+    return [];
+  }
 };
 
 export const generateWhatsAppLink = (appointment: Appointment) => {
