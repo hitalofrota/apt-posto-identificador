@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { X, Save, Loader2 } from 'lucide-react';
-import { Appointment } from '../../types';
+import { X, Save, Loader2, Calendar, Clock } from 'lucide-react';
+import { Appointment, TimeSlot } from '../../types';
 import api from '../../services/api';
+import { getSlotsForDate } from "../../services/scheduler";
 
 interface EditRecordModalProps {
   isOpen: boolean;
@@ -17,6 +18,9 @@ export const EditRecordModal: React.FC<EditRecordModalProps> = ({
   onRefresh 
 }) => {
   const [loading, setLoading] = useState(false);
+  const [loadingSlots, setLoadingSlots] = useState(false);
+  const [availableSlots, setAvailableSlots] = useState<TimeSlot[]>([]);
+  
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
@@ -27,7 +31,6 @@ export const EditRecordModal: React.FC<EditRecordModalProps> = ({
 
   useEffect(() => {
     if (appointment && isOpen) {
-      // Ajustado para ler da nova estrutura mapeada (appointment.citizen)
       setFormData({
         name: appointment.citizen.name,
         phone: appointment.citizen.phone || '',
@@ -38,18 +41,41 @@ export const EditRecordModal: React.FC<EditRecordModalProps> = ({
     }
   }, [appointment, isOpen]);
 
+  useEffect(() => {
+    const fetchSlots = async () => {
+      if (!formData.date || !isOpen) return;
+      
+      setLoadingSlots(true);
+      try {
+        const data = await getSlotsForDate(formData.date);
+        setAvailableSlots(Array.isArray(data) ? data : []);
+      } catch (error) {
+        console.error("Erro ao carregar horários:", error);
+        setAvailableSlots([]);
+      } finally {
+        setLoadingSlots(false);
+      }
+    };
+
+    fetchSlots();
+  }, [formData.date, isOpen]);
+
   if (!isOpen || !appointment) return null;
 
   const handleSave = async () => {
+    if (!formData.time) {
+        alert("Por favor, selecione um horário disponível.");
+        return;
+    }
+
     setLoading(true);
     try {
-      // Payload organizado conforme o backend espera (appointmentService.update)
       const payload = {
         date: formData.date.trim(),
         time: formData.time.trim(),
         serviceName: formData.serviceName,
         citizenName: formData.name.trim(),
-        citizenPhone: formData.phone.replace(/\D/g, "") // Envia apenas números
+        citizenPhone: formData.phone.replace(/\D/g, "") 
       };
 
       const response = await api.put(`/appointments/${appointment.id}`, payload);
@@ -123,22 +149,42 @@ export const EditRecordModal: React.FC<EditRecordModalProps> = ({
               {/* Data */}
               <div className="space-y-1.5">
                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.15em] ml-1">Data</label>
-                <input 
-                  type="date"
-                  value={formData.date}
-                  onChange={(e) => setFormData({...formData, date: e.target.value})}
-                  className="w-full bg-gray-50 border-2 border-gray-100 rounded-2xl p-4 font-bold text-ibicuitinga-navy outline-none"
-                />
+                <div className="relative">
+                    <input 
+                        type="date"
+                        value={formData.date}
+                        onChange={(e) => {
+                            setFormData({...formData, date: e.target.value, time: ''});
+                        }}
+                        className="w-full bg-gray-50 border-2 border-gray-100 rounded-2xl p-4 font-bold text-ibicuitinga-navy outline-none focus:border-ibicuitinga-royalBlue transition-all"
+                    />
+                </div>
               </div>
-              {/* Horário */}
+
+              {/* Horário (Transformado em Select Dinâmico) */}
               <div className="space-y-1.5">
-                <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.15em] ml-1">Horário</label>
-                <input 
-                  type="time"
+                <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.15em] ml-1 flex items-center gap-2">
+                  Horário {loadingSlots && <Loader2 size={12} className="animate-spin text-ibicuitinga-royalBlue" />}
+                </label>
+                <select 
                   value={formData.time}
+                  disabled={loadingSlots || !formData.date}
                   onChange={(e) => setFormData({...formData, time: e.target.value})}
-                  className="w-full bg-gray-50 border-2 border-gray-100 rounded-2xl p-4 font-bold text-ibicuitinga-navy outline-none"
-                />
+                  className="w-full bg-gray-50 border-2 border-gray-100 rounded-2xl p-4 font-bold text-ibicuitinga-navy outline-none focus:border-ibicuitinga-royalBlue transition-all appearance-none disabled:opacity-50"
+                >
+                  <option value="">{loadingSlots ? "Carregando..." : "Selecione"}</option>
+                  {availableSlots
+                    .filter(slot => slot.available || (appointment && slot.time === appointment.time))
+                    .map(slot => (
+                      <option key={slot.time} value={slot.time}>
+                        {slot.time}
+                      </option>
+                    ))
+                  }
+                </select>
+                {!loadingSlots && availableSlots.length === 0 && formData.date && (
+                    <p className="text-[9px] text-red-500 font-bold uppercase mt-1">Sem horários para este dia</p>
+                )}
               </div>
             </div>
           </div>
@@ -146,7 +192,7 @@ export const EditRecordModal: React.FC<EditRecordModalProps> = ({
           <div className="mt-10 space-y-4">
             <button 
               onClick={handleSave}
-              disabled={loading}
+              disabled={loading || loadingSlots}
               className="w-full bg-ibicuitinga-navy text-white p-5 rounded-2xl font-black uppercase text-xs tracking-[0.2em] flex items-center justify-center gap-3 hover:bg-ibicuitinga-royalBlue transition-all shadow-xl active:scale-95 disabled:opacity-50"
             >
               {loading ? <Loader2 className="animate-spin" /> : <Save size={20} />}
