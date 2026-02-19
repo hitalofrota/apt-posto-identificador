@@ -29,7 +29,7 @@ export const AppointmentCard: React.FC<Props> = ({ app, onCancel }) => {
     if (app.status !== "scheduled") return false;
     try {
       const appointmentDateTime = parseISO(`${app.date}T${app.time}`);
-      return differenceInHours(appointmentDateTime, new Date()) >= 24;
+      return differenceInHours(appointmentDateTime, new Date()) >= 48;
     } catch (error) {
       return false;
     }
@@ -130,7 +130,7 @@ export const AppointmentCard: React.FC<Props> = ({ app, onCancel }) => {
               ) : (
                 <div className="p-4 bg-amber-50 rounded-2xl flex items-center gap-3 text-amber-700 text-xs font-bold border border-amber-100">
                   <AlertCircle size={18} className="shrink-0" /> 
-                  Cancelamento disponível apenas com 24h de antecedência.
+                  Cancelamento disponível apenas com 48h de antecedência.
                 </div>
               )}
             </div>
