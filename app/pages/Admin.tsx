@@ -17,7 +17,6 @@ import {
 } from "lucide-react";
 import api from "../services/api";
 import { Appointment } from "../types";
-// Importação dos helpers padronizados
 import { getTodayStr, toMonthYear } from "../utils/dateUtils";
 
 const Admin: React.FC = () => {
@@ -29,7 +28,6 @@ const Admin: React.FC = () => {
   const [loginError, setLoginError] = useState(false);
   const [activeTab, setActiveTab] = useState<"dashboard" | "schedule" | "feedback" | "reports">("dashboard");
 
-  // Padronização do estado inicial
   const [selectedMonth, setSelectedMonth] = useState<string>(toMonthYear(new Date()));
   const [selectedService, setSelectedService] = useState<string>("all");
 
@@ -37,11 +35,17 @@ const Admin: React.FC = () => {
   const [modalTitle, setModalTitle] = useState("");
   const [modalData, setModalData] = useState<Appointment[]>([]);
 
-  const { appointments, blockedDates, blockedSlots, refreshData, actions, checkMonthBlocked } = useAdminData(isAuthenticated);
+  const { 
+    appointments, 
+    blockedDates, 
+    blockedSlots, 
+    refreshData, 
+    actions, 
+    checkMonthBlocked 
+  } = useAdminData(isAuthenticated);
 
   const filteredAppointments = useMemo(() => {
     return appointments.filter(app => {
-      // Usando slice para garantir segurança na comparação YYYY-MM
       const appMonth = app.date.slice(0, 7);
       const matchMonth = selectedMonth === "" || appMonth === selectedMonth;
       const matchService = selectedService === "all" || app.serviceName === selectedService;
@@ -61,14 +65,12 @@ const Admin: React.FC = () => {
     let title = "Registros Detalhados";
 
     if (type === "Para Hoje") {
-      const today = getTodayStr(); // Padronizado para data local
+      const today = getTodayStr(); 
       data = filteredAppointments.filter(a => a.date === today);
       title = "Agendamentos de Hoje";
     } else if (type === "Ativos") {
       data = filteredAppointments.filter(a => a.status === 'scheduled');
       title = "Agendamentos Ativos";
-    } else if (type === "Total Geral") {
-      title = "Todos os Registros (Filtrados)";
     }
 
     setModalData(data);
@@ -146,7 +148,7 @@ const Admin: React.FC = () => {
             <button 
               type="submit" 
               disabled={isLoading}
-              className="w-full bg-ibicuitinga-navy text-white py-4 rounded-2xl font-black uppercase text-sm tracking-widest hover:bg-ibicuitinga-royalBlue disabled:opacity-50 transition-all shadow-xl flex items-center justify-center gap-2 group"
+              className="w-full bg-ibicuitinga-navy text-white py-4 rounded-2xl font-black uppercase text-sm tracking-widest hover:bg-ibicuitinga-royalBlue disabled:opacity-50 transition-all shadow-xl flex items-center justify-center gap-2"
             >
               {isLoading ? <Loader2 className="animate-spin" /> : <LogIn size={18} />}
               {isLoading ? "Autenticando..." : "Entrar no Sistema"}
@@ -225,7 +227,10 @@ const Admin: React.FC = () => {
         onClose={() => setIsModalOpen(false)}
         appointments={modalData}
         title={modalTitle}
-        onRefresh={refreshData}
+        onRefresh={() => {
+          refreshData();
+          setIsModalOpen(false); 
+        }}
       />
     </div>
   );
