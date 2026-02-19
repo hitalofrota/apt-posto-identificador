@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { FileDown, Download } from "lucide-react";
-import { format, parseISO, getYear } from "date-fns";
+import { FileDown, Download, AlertCircle } from "lucide-react";
+import { format, getYear } from "date-fns";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { SERVICES } from "../../constants";
@@ -19,6 +19,9 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({ appointments }) => {
   );
   const [reportServiceId, setReportServiceId] = useState("all");
 
+  // Lógica de Validação: Verifica se algum filtro de tempo foi selecionado
+  const isDownloadAllowed = reportDate !== "" || reportMonthPart !== "";
+
   const monthOptions = [
     { value: "01", label: "Janeiro" }, { value: "02", label: "Fevereiro" },
     { value: "03", label: "Março" }, { value: "04", label: "Abril" },
@@ -34,6 +37,8 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({ appointments }) => {
   );
 
   const generatePDF = () => {
+    if (!isDownloadAllowed) return;
+
     const doc = new jsPDF();
     doc.setFontSize(18);
     doc.text("Relatório de Agendamentos - Ibicuitinga", 14, 22);
@@ -89,11 +94,12 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({ appointments }) => {
           Central de Relatórios
         </h3>
         <p className="text-gray-500 font-medium text-sm">
-          Selecione os filtros desejados para exportar o PDF personalizado.
+          Selecione uma data ou mês para habilitar a geração do relatório.
         </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 bg-gray-50 p-6 rounded-[2rem] border border-gray-100">
+        {/* Filtro por Dia */}
         <div>
           <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 block">Por Dia</label>
           <input
@@ -103,10 +109,11 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({ appointments }) => {
               setReportDate(e.target.value);
               if (e.target.value) setReportMonthPart("");
             }}
-            className="w-full bg-white border-2 border-gray-100 rounded-xl p-3 font-bold text-ibicuitinga-navy text-sm outline-none focus:border-ibicuitinga-royalBlue"
+            className="w-full bg-white border-2 border-gray-100 rounded-xl p-3 font-bold text-ibicuitinga-navy text-sm outline-none focus:border-ibicuitinga-royalBlue transition-all"
           />
         </div>
 
+        {/* Filtro por Mês */}
         <div>
           <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 block">Por Mês</label>
           <div className="flex gap-2">
@@ -116,7 +123,7 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({ appointments }) => {
                 setReportMonthPart(e.target.value);
                 if (e.target.value) setReportDate("");
               }}
-              className="flex-[2] bg-white border-2 border-gray-100 rounded-xl p-3 font-bold text-ibicuitinga-navy text-sm outline-none appearance-none focus:border-ibicuitinga-royalBlue"
+              className="flex-[2] bg-white border-2 border-gray-100 rounded-xl p-3 font-bold text-ibicuitinga-navy text-sm outline-none appearance-none focus:border-ibicuitinga-royalBlue transition-all"
             >
               <option value="">Selecione o mês</option>
               {monthOptions.map((opt) => (
@@ -135,6 +142,7 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({ appointments }) => {
           </div>
         </div>
 
+        {/* Filtro por Serviço */}
         <div>
           <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 block">Por Serviço</label>
           <select
@@ -150,24 +158,41 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({ appointments }) => {
         </div>
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-4 items-center justify-center pt-4">
-        <button
-          onClick={() => {
-            setReportDate("");
-            setReportMonthPart("");
-            setReportYearPart(getYear(new Date()).toString());
-            setReportServiceId("all");
-          }}
-          className="text-[10px] font-black text-gray-400 uppercase tracking-widest hover:text-red-500 transition-colors"
-        >
-          Limpar Filtros
-        </button>
-        <button
-          onClick={generatePDF}
-          className="bg-ibicuitinga-navy text-white px-10 py-5 rounded-2xl font-black uppercase text-sm tracking-widest shadow-xl hover:bg-ibicuitinga-royalBlue transition-all flex items-center gap-3 active:scale-95"
-        >
-          <Download size={20} /> Gerar PDF Filtrado
-        </button>
+      <div className="flex flex-col gap-6 items-center justify-center pt-4">
+        {/* Mensagem de alerta se não houver seleção */}
+        {!isDownloadAllowed && (
+          <div className="flex items-center gap-2 text-amber-600 bg-amber-50 px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-wider border border-amber-100 animate-pulse">
+            <AlertCircle size={14} />
+            Selecione uma data ou mês para baixar o relatório
+          </div>
+        )}
+
+        <div className="flex flex-col sm:flex-row gap-4 items-center">
+          <button
+            onClick={() => {
+              setReportDate("");
+              setReportMonthPart("");
+              setReportYearPart(getYear(new Date()).toString());
+              setReportServiceId("all");
+            }}
+            className="text-[10px] font-black text-gray-400 uppercase tracking-widest hover:text-red-500 transition-colors"
+          >
+            Limpar Filtros
+          </button>
+          
+          <button
+            onClick={generatePDF}
+            disabled={!isDownloadAllowed}
+            className={`
+              flex items-center gap-3 px-10 py-5 rounded-2xl font-black uppercase text-sm tracking-widest shadow-xl transition-all
+              ${isDownloadAllowed 
+                ? "bg-ibicuitinga-navy text-white hover:bg-ibicuitinga-royalBlue active:scale-95" 
+                : "bg-gray-200 text-gray-400 cursor-not-allowed shadow-none"}
+            `}
+          >
+            <Download size={20} /> Gerar PDF Filtrado
+          </button>
+        </div>
       </div>
     </div>
   );
