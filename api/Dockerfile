@@ -1,12 +1,18 @@
-FROM node:20-slim
+FROM node:20
 
 WORKDIR /app
-RUN apt-get update && apt-get install -y openssl
 
+# Instala as dependências
 COPY package*.json ./
 RUN npm install
 
-COPY . .
+# Copia o schema e gera o client ESPECÍFICO para o Linux do container
+COPY prisma ./prisma/
 RUN npx prisma generate
 
-CMD npx prisma migrate deploy && node server.js
+# Copia o resto do código
+COPY . .
+
+EXPOSE 3000
+
+CMD ["npm", "run", "dev"]

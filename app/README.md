@@ -25,6 +25,9 @@ sudo service nginx restart
 # Rodar o docker
 docker compose up --build
 
+# Rodar docker em produção
+docker compose -f docker-compose.prod.yml up --build -d
+
 # Rodar ngrok
 ngrok http 80
 
