@@ -67,7 +67,7 @@ const Home: React.FC = () => {
               </div>
               <div className="flex items-center gap-3 justify-center md:justify-start">
                 <span className="w-3 h-3 rounded-full bg-ibicuitinga-yellow shrink-0"></span>
-                <p className="font-bold text-ibicuitinga-navy/80 text-lg">Registro de Nascimento/Casamento sempre original.</p>
+                <p className="font-bold text-ibicuitinga-navy/80 text-lg">Registro de Nascimento ou Casamento sempre original.</p>
               </div>
               <div className="flex items-center gap-3 justify-center md:justify-start">
                 <span className="w-3 h-3 rounded-full bg-ibicuitinga-lightGreen shrink-0"></span>
