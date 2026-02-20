@@ -3,7 +3,9 @@ import { CONTACT_INFO } from '../../constants';
 
 export const ContactForm: React.FC = () => {
   const [contactForm, setContactForm] = useState({
-    name: '', phone: '', email: '', subject: '', message: ''
+    name: '',
+    subject: '',
+    message: ''
   });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -13,14 +15,14 @@ export const ContactForm: React.FC = () => {
 
   const handleContactSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const { name, phone, email, subject, message } = contactForm;
     
-    const emailBody = `Nome: ${name}\nTelefone: ${phone}\nE-mail: ${email}\n\nAssunto: ${subject}\n\nMensagem:\n${message}`;
-    const mailtoLink = `mailto:${CONTACT_INFO.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(emailBody)}`;
+    const { name, subject, message } = contactForm;
+    const text = `*Nova Mensagem*\n\n*Nome:* ${name}\n*Assunto:* ${subject}\n*Mensagem:* ${message}`;
+    const phoneNumber = CONTACT_INFO.whatsapp.replace(/\D/g, '');
+    const whatsappLink = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(text)}`;
     
-    window.location.href = mailtoLink;
-    alert(`Obrigado, ${name}! Abrindo seu e-mail...`);
-    setContactForm({ name: '', phone: '', email: '', subject: '', message: '' });
+    window.open(whatsappLink, '_blank');
+    setContactForm({ name: '', subject: '', message: '' });
   };
 
   return (
@@ -28,24 +30,20 @@ export const ContactForm: React.FC = () => {
       <h3 className="font-black text-2xl mb-6">Enviar Mensagem</h3>
       <form onSubmit={handleContactSubmit} className="space-y-4">
         <input 
-          type="text" name="name" placeholder="Seu Nome" required 
-          value={contactForm.name} onChange={handleInputChange}
+          type="text" 
+          name="name" 
+          placeholder="Seu Nome" 
+          required 
+          value={contactForm.name} 
+          onChange={handleInputChange}
           className="w-full bg-gray-50 border-2 border-gray-100 rounded-2xl p-4 focus:border-ibicuitinga-royalBlue outline-none font-bold"
         />
-        <div className="grid grid-cols-2 gap-4">
-          <input 
-            type="tel" name="phone" placeholder="Telefone" required
-            value={contactForm.phone} onChange={handleInputChange}
-            className="w-full bg-gray-50 border-2 border-gray-100 rounded-2xl p-4 focus:border-ibicuitinga-royalBlue outline-none font-bold"
-          />
-          <input 
-            type="email" name="email" placeholder="E-mail" required
-            value={contactForm.email} onChange={handleInputChange}
-            className="w-full bg-gray-50 border-2 border-gray-100 rounded-2xl p-4 focus:border-ibicuitinga-royalBlue outline-none font-bold"
-          />
-        </div>
+
         <select 
-          name="subject" required value={contactForm.subject} onChange={handleInputChange}
+          name="subject" 
+          required 
+          value={contactForm.subject} 
+          onChange={handleInputChange}
           className="w-full bg-gray-50 border-2 border-gray-100 rounded-2xl p-4 focus:border-ibicuitinga-royalBlue outline-none font-bold appearance-none"
         >
           <option value="">Selecione o Assunto</option>
@@ -54,12 +52,27 @@ export const ContactForm: React.FC = () => {
           <option value="Identidade">Carteira de Identidade</option>
           <option value="Outros">Outros</option>
         </select>
-        <textarea 
-          name="message" placeholder="Mensagem..." required rows={3}
-          value={contactForm.message} onChange={handleInputChange}
-          className="w-full bg-gray-50 border-2 border-gray-100 rounded-2xl p-4 focus:border-ibicuitinga-royalBlue outline-none font-bold resize-none"
-        ></textarea>
-        <button type="submit" className="w-full bg-ibicuitinga-navy text-white py-4 rounded-2xl font-black hover:bg-ibicuitinga-royalBlue transition-all active:scale-95 shadow-xl">
+
+        <div className="relative">
+          <textarea 
+            name="message" 
+            placeholder="Mensagem..." 
+            required 
+            rows={5}
+            maxLength={100}
+            value={contactForm.message} 
+            onChange={handleInputChange}
+            className="w-full bg-gray-50 border-2 border-gray-100 rounded-2xl p-4 focus:border-ibicuitinga-royalBlue outline-none font-bold resize-none"
+          ></textarea>
+          <div className="text-right text-xs font-bold text-gray-400 mt-1 mr-2">
+            {contactForm.message.length}/100
+          </div>
+        </div>
+
+        <button 
+          type="submit" 
+          className="w-full bg-ibicuitinga-navy text-white py-4 rounded-2xl font-black hover:bg-ibicuitinga-royalBlue transition-all active:scale-95 shadow-xl"
+        >
           Enviar Solicitação
         </button>
       </form>
