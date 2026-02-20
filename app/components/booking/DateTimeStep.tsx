@@ -52,7 +52,6 @@ export const DateTimeStep: React.FC<DateTimeStepProps> = ({
 
       setLoading(true);
       try {
-        // Padronização: toISODate garante YYYY-MM-DD para a API
         const data = await getSlotsForDate(toISODate(selectedDate));
         setSlots(Array.isArray(data) ? data : []);
       } catch (error) {
@@ -75,15 +74,17 @@ export const DateTimeStep: React.FC<DateTimeStepProps> = ({
   const isDateDisabled = (day: Date) => {
     const today = startOfToday();
     const dateStr = toISODate(day);
-    return isBefore(day, today) || FERIADOS.includes(dateStr);
+    const dayOfWeek = getDay(day);
+    
+    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+
+    return isBefore(day, today) || FERIADOS.includes(dateStr) || isWeekend;
   };
 
   const isTimePassed = (slotTime: string) => {
-    // Só validamos horários passados se a data selecionada for HOJE
     if (!selectedDate || !isSameDay(selectedDate, new Date())) return false;
 
     const now = new Date();
-    // Pendência corrigida: Usando date-fns para extrair horas e minutos locais
     const currentHour = getHours(now);
     const currentMinute = getMinutes(now);
     
