@@ -75,6 +75,7 @@ export const DataStep: React.FC<Props> = ({
               value={data.phone}
               onChange={handleInputChange}
               placeholder="(88) 99999-9999"
+              maxLength={15}
               className={`w-full bg-gray-50 border-2 rounded-2xl p-4 focus:border-ibicuitinga-royalBlue outline-none font-bold text-ibicuitinga-navy transition-colors ${formErrors.phone ? "border-red-500 bg-red-50/30" : "border-gray-100"}`}
             />
             {formErrors.phone && (
@@ -95,6 +96,7 @@ export const DataStep: React.FC<Props> = ({
               onChange={handleInputChange}
               placeholder="000.000.000-00"
               disabled={noCPF}
+              maxLength={14}
               className={`w-full bg-gray-50 border-2 rounded-2xl p-4 focus:border-ibicuitinga-royalBlue outline-none font-bold text-ibicuitinga-navy transition-colors ${noCPF ? "bg-gray-100 text-gray-400 cursor-not-allowed" : ""} ${formErrors.cpf ? "border-red-500 bg-red-50/30" : "border-gray-100"}`}
             />
             {formErrors.cpf && (
