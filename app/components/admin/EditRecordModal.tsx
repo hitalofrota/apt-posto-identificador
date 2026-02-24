@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { X, Save, Loader2, Calendar, Clock } from 'lucide-react';
+import { X, Save, Loader2 } from 'lucide-react';
 import { Appointment, TimeSlot } from '../../types';
 import api from '../../services/api';
 import { getSlotsForDate } from "../../services/scheduler";
+import { getTodayStr } from "../../utils/dateUtils";
 
 interface EditRecordModalProps {
   isOpen: boolean;
@@ -20,6 +21,7 @@ export const EditRecordModal: React.FC<EditRecordModalProps> = ({
   const [loading, setLoading] = useState(false);
   const [loadingSlots, setLoadingSlots] = useState(false);
   const [availableSlots, setAvailableSlots] = useState<TimeSlot[]>([]);
+  const [showWeekendError, setShowWeekendError] = useState(false);
   
   const [formData, setFormData] = useState({
     name: '',
@@ -28,6 +30,13 @@ export const EditRecordModal: React.FC<EditRecordModalProps> = ({
     date: '',
     time: ''
   });
+
+  const isWeekend = (dateString: string) => {
+    if (!dateString) return false;
+    const date = new Date(dateString + 'T00:00:00');
+    const day = date.getDay();
+    return day === 0 || day === 6;
+  };
 
   useEffect(() => {
     if (appointment && isOpen) {
@@ -38,12 +47,16 @@ export const EditRecordModal: React.FC<EditRecordModalProps> = ({
         date: appointment.date,
         time: appointment.time
       });
+      setShowWeekendError(false);
     }
   }, [appointment, isOpen]);
 
   useEffect(() => {
     const fetchSlots = async () => {
-      if (!formData.date || !isOpen) return;
+      if (!formData.date || !isOpen || isWeekend(formData.date)) {
+        setAvailableSlots([]);
+        return;
+      }
       
       setLoadingSlots(true);
       try {
@@ -63,9 +76,14 @@ export const EditRecordModal: React.FC<EditRecordModalProps> = ({
   if (!isOpen || !appointment) return null;
 
   const handleSave = async () => {
+    if (!formData.date || isWeekend(formData.date)) {
+      setShowWeekendError(true);
+      return;
+    }
+
     if (!formData.time) {
-        alert("Por favor, selecione um horário disponível.");
-        return;
+      alert("Por favor, selecione um horário disponível.");
+      return;
     }
 
     setLoading(true);
@@ -87,7 +105,7 @@ export const EditRecordModal: React.FC<EditRecordModalProps> = ({
       }
     } catch (error: any) {
       console.error("Erro ao atualizar:", error.response?.data || error.message);
-      alert("Erro ao salvar as alterações. Verifique os dados e tente novamente.");
+      alert("Erro ao salvar as alterações.");
     } finally {
       setLoading(false);
     }
@@ -106,7 +124,6 @@ export const EditRecordModal: React.FC<EditRecordModalProps> = ({
           <p className="text-sm font-black text-ibicuitinga-royalBlue mt-2 uppercase tracking-widest">{appointment.protocol}</p>
 
           <div className="mt-10 space-y-5 text-left">
-            {/* Nome do Cidadão */}
             <div className="space-y-1.5">
               <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.15em] ml-1">Nome do Cidadão</label>
               <input 
@@ -118,7 +135,6 @@ export const EditRecordModal: React.FC<EditRecordModalProps> = ({
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              {/* Telefone */}
               <div className="space-y-1.5 text-left">
                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.15em] ml-1">Telefone</label>
                 <input 
@@ -129,7 +145,6 @@ export const EditRecordModal: React.FC<EditRecordModalProps> = ({
                   placeholder="(00) 00000-0000"
                 />
               </div>
-              {/* Serviço */}
               <div className="space-y-1.5 text-left">
                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.15em] ml-1">Serviço</label>
                 <select 
@@ -152,16 +167,29 @@ export const EditRecordModal: React.FC<EditRecordModalProps> = ({
                 <div className="relative">
                     <input 
                         type="date"
+                        min={getTodayStr()}
                         value={formData.date}
                         onChange={(e) => {
-                            setFormData({...formData, date: e.target.value, time: ''});
+                            const selectedDate = e.target.value;
+                            if (isWeekend(selectedDate)) {
+                              setFormData({...formData, date: '', time: ''});
+                              setShowWeekendError(true);
+                            } else {
+                              setFormData({...formData, date: selectedDate, time: ''});
+                              setShowWeekendError(false);
+                            }
                         }}
-                        className="w-full bg-gray-50 border-2 border-gray-100 rounded-2xl p-4 font-bold text-ibicuitinga-navy outline-none focus:border-ibicuitinga-royalBlue transition-all"
+                        className={`w-full bg-gray-50 border-2 rounded-2xl p-4 font-bold text-ibicuitinga-navy outline-none focus:border-ibicuitinga-royalBlue transition-all ${showWeekendError ? 'border-amber-400 bg-amber-50' : 'border-gray-100'}`}
                     />
+                    {showWeekendError && (
+                      <p className="text-[9px] text-amber-600 font-black uppercase mt-1 ml-1 animate-pulse">
+                        * Apenas dias úteis (Seg a Sex)
+                      </p>
+                    )}
                 </div>
               </div>
 
-              {/* Horário (Transformado em Select Dinâmico) */}
+              {/* Horário */}
               <div className="space-y-1.5">
                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.15em] ml-1 flex items-center gap-2">
                   Horário {loadingSlots && <Loader2 size={12} className="animate-spin text-ibicuitinga-royalBlue" />}
@@ -182,7 +210,7 @@ export const EditRecordModal: React.FC<EditRecordModalProps> = ({
                     ))
                   }
                 </select>
-                {!loadingSlots && availableSlots.length === 0 && formData.date && (
+                {!loadingSlots && availableSlots.length === 0 && formData.date && !isWeekend(formData.date) && (
                     <p className="text-[9px] text-red-500 font-bold uppercase mt-1">Sem horários para este dia</p>
                 )}
               </div>
