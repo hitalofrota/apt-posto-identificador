@@ -50,10 +50,8 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({ appointments }) => {
     if (reportDate) {
       filtered = filtered.filter((app) => app.date === reportDate);
       doc.text(`Filtro: Data específica ${displayDate(reportDate)}`, 14, 38);
-    }
-
-    const combinedMonthYear = reportMonthPart ? `${reportYearPart}-${reportMonthPart}` : "";
-    if (combinedMonthYear && !reportDate) {
+    } else if (reportMonthPart) {
+      const combinedMonthYear = `${reportYearPart}-${reportMonthPart}`;
       filtered = filtered.filter((app) => app.date.startsWith(combinedMonthYear));
       const monthLabel = monthOptions.find((m) => m.value === reportMonthPart)?.label;
       doc.text(`Filtro: Período ${monthLabel} de ${reportYearPart}`, 14, 38);
@@ -62,7 +60,7 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({ appointments }) => {
     if (reportServiceId !== "all") {
       const sName = SERVICES.find((s) => s.id === reportServiceId)?.name;
       filtered = filtered.filter((app) => app.serviceId === reportServiceId);
-      doc.text(`Filtro: Serviço - ${sName}`, 14, reportDate || combinedMonthYear ? 43 : 38);
+      doc.text(`Filtro: Serviço - ${sName}`, 14, 43);
     }
 
     const tableData = filtered.map((app) => [
@@ -76,9 +74,10 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({ appointments }) => {
     autoTable(doc, {
       head: [["Protocolo", "Cidadão", "Serviço", "Data/Hora", "Status"]],
       body: tableData,
-      startY: reportDate || combinedMonthYear || reportServiceId !== "all" ? 50 : 40,
+      startY: 50,
       theme: "grid",
       headStyles: { fillColor: [23, 38, 93] },
+      styles: { fontSize: 9 },
     });
 
     doc.save(`relatorio-agendamentos-${toISODate(new Date())}.pdf`);
@@ -159,7 +158,6 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({ appointments }) => {
       </div>
 
       <div className="flex flex-col gap-6 items-center justify-center pt-4">
-        {/* Mensagem de alerta se não houver seleção */}
         {!isDownloadAllowed && (
           <div className="flex items-center gap-2 text-amber-600 bg-amber-50 px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-wider border border-amber-100 animate-pulse">
             <AlertCircle size={14} />

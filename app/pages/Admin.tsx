@@ -217,7 +217,7 @@ const Admin: React.FC = () => {
           />
         )}
         
-        {activeTab === "reports" && <ReportsTab appointments={filteredAppointments} />}
+        {activeTab === "reports" && <ReportsTab appointments={appointments} />}
 
         {activeTab === "feedback" && <FeedbackTab appointments={filteredAppointments} />}
       </div>
