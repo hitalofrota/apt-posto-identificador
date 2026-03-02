@@ -58,9 +58,12 @@ export const appointmentController = {
   async rate(req, res) {
     try {
       const { rating, feedback } = req.body;
+      
       const updated = await appointmentService.update(req.params.id, {
-        rating: Number(rating), feedback, status: 'completed'
+        rating: Number(rating), 
+        feedback
       });
+      
       res.json(mapAppointment(updated));
     } catch (e) {
       res.status(400).json({ error: "Erro ao salvar avaliação" });
