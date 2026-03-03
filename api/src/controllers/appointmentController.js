@@ -38,7 +38,7 @@ export const appointmentController = {
     } catch (e) {
       if (e.message === "LIMITE_VIZINHO_ATINGIDO") {
         return res.status(400).json({ 
-          error: "Limite atingido. Máximo de 2 agendamentos de vizinhos por dia." 
+          error: "Limite de atendimentos por munícipes de cidades vizinhas atingido. Máximo 2 atendimentos." 
         });
       }
       if (e.message === "CEP_INVALIDO") return res.status(400).json({ error: "CEP inválido." });
