@@ -55,6 +55,10 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({
     await loadDayStatus()
   };
 
+  const now = new Date();
+  const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+  const isToday = selectedDate === getTodayStr();
+
   return (
     <div className="space-y-8 animate-fade-in pb-10">
       
@@ -133,18 +137,24 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({
               return true;
             })
             .map((slot) => {
+              const isTimePassed = isToday && slot.time < currentTime;
+
               const isBlocked = isDateBlocked || !slot.available;
+
+              const isButtonDisabled = isBlocked || isLoadingSlots || isTimePassed;
 
               return (
                 <button
                   key={slot.time}
-                  onClick={() => !isDateBlocked && handleToggleSlot(slot.time)}
-                  disabled={isDateBlocked || isLoadingSlots}
+                  onClick={() => !isButtonDisabled && handleToggleSlot(slot.time)}
+                  disabled={isButtonDisabled}
                   className={`p-6 rounded-3xl border-2 transition-all flex flex-col items-center justify-center gap-1 group relative ${
                     isBlocked 
                       ? 'bg-red-50 border-red-100' 
-                      : 'bg-white border-gray-50 hover:border-ibicuitinga-royalBlue shadow-sm'
-                  } ${isLoadingSlots ? 'opacity-50' : ''}`}
+                      : 'bg-white border-gray-50 shadow-sm'
+                  } ${!isBlocked && !isTimePassed ? 'hover:border-ibicuitinga-royalBlue' : ''} 
+                    ${isTimePassed ? 'opacity-50 cursor-not-allowed' : ''} 
+                    ${isLoadingSlots ? 'opacity-50' : ''}`}
                 >
                   <div className="absolute top-3 right-3">
                     {isBlocked ? <Lock size={14} className="text-red-400" /> : <Unlock size={14} className="text-gray-200" />}
@@ -153,8 +163,9 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({
                   <span className={`text-2xl font-black ${isBlocked ? 'text-red-600' : 'text-ibicuitinga-navy'}`}>
                     {slot.time}
                   </span>
+                  
                   <span className={`text-[9px] font-black uppercase tracking-widest ${isBlocked ? 'text-red-400' : 'text-gray-400'}`}>
-                    {isBlocked ? 'Indisponível' : 'Livre'}
+                    {isTimePassed && !isBlocked ? 'Horário Expirado' : (isBlocked ? 'Indisponível' : 'Livre')}
                   </span>
                 </button>
               );
