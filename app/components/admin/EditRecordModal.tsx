@@ -38,6 +38,12 @@ export const EditRecordModal: React.FC<EditRecordModalProps> = ({
     return day === 0 || day === 6;
   };
 
+  const isFriday = (dateString: string) => {
+    if (!dateString) return false;
+    const date = new Date(dateString + 'T00:00:00');
+    return date.getDay() === 5;
+  };
+
   useEffect(() => {
     if (appointment && isOpen) {
       setFormData({
@@ -110,6 +116,10 @@ export const EditRecordModal: React.FC<EditRecordModalProps> = ({
       setLoading(false);
     }
   };
+
+  const now = new Date();
+  const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+  const isToday = formData.date === getTodayStr();
 
   return (
     <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-ibicuitinga-navy/60 backdrop-blur-md animate-fade-in text-left">
@@ -202,7 +212,19 @@ export const EditRecordModal: React.FC<EditRecordModalProps> = ({
                 >
                   <option value="">{loadingSlots ? "Carregando..." : "Selecione"}</option>
                   {availableSlots
-                    .filter(slot => slot.available || (appointment && slot.time === appointment.time))
+                    .filter(slot => {
+                      const isCurrentAppointment = appointment && slot.time === appointment.time && formData.date === appointment.date;
+                      
+                      if (isFriday(formData.date) && slot.time > "12:00" && !isCurrentAppointment) {
+                        return false;
+                      }
+
+                      if (isToday && slot.time < currentTime && !isCurrentAppointment) {
+                        return false;
+                      }
+                      
+                      return slot.available || isCurrentAppointment;
+                    })
                     .map(slot => (
                       <option key={slot.time} value={slot.time}>
                         {slot.time}
