@@ -96,6 +96,15 @@ export const DateTimeStep: React.FC<DateTimeStepProps> = ({
     return false;
   };
 
+  // CRIAMOS O FILTRO AQUI 👇
+  const filteredSlots = slots.filter(slot => {
+    // Se tiver uma data selecionada, for sexta-feira (getDay === 5) e passar das 12:00, remove da lista
+    if (selectedDate && getDay(selectedDate) === 5 && slot.time > "12:00") {
+      return false;
+    }
+    return true;
+  });
+
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="bg-white rounded-[2.5rem] shadow-xl p-8 border border-gray-100">
@@ -176,8 +185,9 @@ export const DateTimeStep: React.FC<DateTimeStepProps> = ({
             </div>
           ) : (
             <div className="grid grid-cols-4 gap-3">
-              {slots.length > 0 ? (
-                slots.map(slot => {
+              {/* USAMOS O filteredSlots AQUI 👇 */}
+              {filteredSlots.length > 0 ? (
+                filteredSlots.map(slot => {
                   const isPast = isTimePassed(slot.time);
                   const isButtonDisabled = !slot.available || isPast;
 
