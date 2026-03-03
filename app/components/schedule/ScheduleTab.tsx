@@ -25,6 +25,12 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({
   const [daySlots, setDaySlots] = useState<TimeSlot[]>([]);
   const [isLoadingSlots, setIsLoadingSlots] = useState(false);
 
+  const isFriday = (dateString: string) => {
+    if (!dateString) return false;
+    const date = new Date(dateString + 'T00:00:00');
+    return date.getDay() === 5;
+  };
+
   const loadDayStatus = async () => {
     setIsLoadingSlots(true);
     try {
@@ -119,33 +125,40 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-          {daySlots.map((slot) => {
-            const isBlocked = isDateBlocked || !slot.available;
+          {daySlots
+            .filter(slot => {
+              if (isFriday(selectedDate) && slot.time > "12:00") {
+                return false;
+              }
+              return true;
+            })
+            .map((slot) => {
+              const isBlocked = isDateBlocked || !slot.available;
 
-            return (
-              <button
-                key={slot.time}
-                onClick={() => !isDateBlocked && handleToggleSlot(slot.time)}
-                disabled={isDateBlocked || isLoadingSlots}
-                className={`p-6 rounded-3xl border-2 transition-all flex flex-col items-center justify-center gap-1 group relative ${
-                  isBlocked 
-                    ? 'bg-red-50 border-red-100' 
-                    : 'bg-white border-gray-50 hover:border-ibicuitinga-royalBlue shadow-sm'
-                } ${isLoadingSlots ? 'opacity-50' : ''}`}
-              >
-                <div className="absolute top-3 right-3">
-                  {isBlocked ? <Lock size={14} className="text-red-400" /> : <Unlock size={14} className="text-gray-200" />}
-                </div>
-                
-                <span className={`text-2xl font-black ${isBlocked ? 'text-red-600' : 'text-ibicuitinga-navy'}`}>
-                  {slot.time}
-                </span>
-                <span className={`text-[9px] font-black uppercase tracking-widest ${isBlocked ? 'text-red-400' : 'text-gray-400'}`}>
-                  {isBlocked ? 'Indisponível' : 'Livre'}
-                </span>
-              </button>
-            );
-          })}
+              return (
+                <button
+                  key={slot.time}
+                  onClick={() => !isDateBlocked && handleToggleSlot(slot.time)}
+                  disabled={isDateBlocked || isLoadingSlots}
+                  className={`p-6 rounded-3xl border-2 transition-all flex flex-col items-center justify-center gap-1 group relative ${
+                    isBlocked 
+                      ? 'bg-red-50 border-red-100' 
+                      : 'bg-white border-gray-50 hover:border-ibicuitinga-royalBlue shadow-sm'
+                  } ${isLoadingSlots ? 'opacity-50' : ''}`}
+                >
+                  <div className="absolute top-3 right-3">
+                    {isBlocked ? <Lock size={14} className="text-red-400" /> : <Unlock size={14} className="text-gray-200" />}
+                  </div>
+                  
+                  <span className={`text-2xl font-black ${isBlocked ? 'text-red-600' : 'text-ibicuitinga-navy'}`}>
+                    {slot.time}
+                  </span>
+                  <span className={`text-[9px] font-black uppercase tracking-widest ${isBlocked ? 'text-red-400' : 'text-gray-400'}`}>
+                    {isBlocked ? 'Indisponível' : 'Livre'}
+                  </span>
+                </button>
+              );
+            })}
           
           {!isLoadingSlots && daySlots.length === 0 && (
             <div className="col-span-full py-10 text-center text-gray-400 font-bold uppercase text-xs tracking-widest">
