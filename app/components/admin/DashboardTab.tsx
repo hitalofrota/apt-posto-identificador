@@ -44,6 +44,17 @@ export const DashboardTab: React.FC<DashboardProps> = ({
 }) => {
   const today = getTodayStr();
 
+  const averageRating = useMemo(() => {
+    const ratedAppointments = appointments.filter(a => typeof a.rating === 'number' && a.rating > 0);
+    
+    if (ratedAppointments.length === 0) return "0.0";
+    
+    const sum = ratedAppointments.reduce((acc, curr) => acc + curr.rating, 0);
+    const avg = sum / ratedAppointments.length;
+    
+    return avg.toFixed(1);
+  }, [appointments]);
+
   const stats = [
     { 
       label: "Total Geral", 
@@ -71,7 +82,7 @@ export const DashboardTab: React.FC<DashboardProps> = ({
     },
     { 
       label: "Avaliação Média", 
-      value: "5.0", 
+      value: averageRating, // ATUALIZADO: Usando a variável calculada no useMemo
       color: "border-yellow-500", 
       textColor: "text-yellow-600",
       icon: <Star size={20} />,
