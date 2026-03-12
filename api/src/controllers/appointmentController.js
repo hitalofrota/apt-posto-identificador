@@ -3,13 +3,18 @@ import { mapAppointment } from '../utils/mapper.js';
 
 export const appointmentController = {
   async getSlots(req, res) {
-    try {
+  try {
       const { date } = req.query;
-      if (!date) return res.status(400).json({ error: "Data é obrigatória" });
+      
+      const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+      if (!date || !dateRegex.test(date)) {
+        return res.status(400).json({ error: "Invalid resquest" });
+      }
+
       const slots = await appointmentService.getAvailableSlots(date);
       res.json(slots);
     } catch (e) {
-      res.status(500).json({ error: "Erro ao buscar horários disponíveis" });
+      res.status(500).json({ error: "Erro interno" });
     }
   },
 

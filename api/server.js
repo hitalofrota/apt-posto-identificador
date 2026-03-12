@@ -17,7 +17,7 @@ userService.createAdminInitial();
 
 app.post('/login', authController.login);
 
-app.post('/users/signup', async (req, res) => {
+app.post('/users/signup/create', async (req, res) => {
   try {
     const { username, password, name } = req.body;
     

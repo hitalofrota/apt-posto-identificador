@@ -1,12 +1,11 @@
 import { Router } from 'express';
 import { appointmentController } from '../controllers/appointmentController.js';
 import { authMiddleware } from '../middlewares/auth.js';
+import { slotsLimiter } from '../middlewares/rateLimiter.js';
 
 const router = Router();
 
-// --- ROTAS PÚBLICAS (Acesso livre para o cidadão)
-
-router.get('/slots', appointmentController.getSlots); 
+router.get('/slots', slotsLimiter,  appointmentController.getSlots); 
 
 // 2. Outras rotas públicas
 router.get('/citizen/:cpf', appointmentController.listByCpf);
