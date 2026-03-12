@@ -6,6 +6,11 @@ export default defineConfig({
   server: {
     port: 3000,
     host: '0.0.0.0',
+    allowedHosts: [
+      'app.hxfservice.com.br',
+      '.hxfservice.com.br', 
+      'localhost'
+    ],
     watch: {
       usePolling: true,
     },
