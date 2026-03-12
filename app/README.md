@@ -37,3 +37,6 @@ npx prisma studio
 # Derrubar todos os containers do docker:
 docker stop $(docker ps -q)
 
+# Instalar o recaptcha
+docker-compose exec app npm install react-google-recaptcha
+
