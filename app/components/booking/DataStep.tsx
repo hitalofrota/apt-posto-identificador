@@ -2,12 +2,13 @@ import React, { useState } from "react";
 import { formatPhone, formatCPF, formatCEP } from "../../utils/validators";
 import { Citizen } from "../../types";
 import { AlertCircle } from "lucide-react";
+import ReCAPTCHA from "react-google-recaptcha";
 
 interface Props {
   data: Citizen;
   setData: React.Dispatch<React.SetStateAction<Citizen>>;
   formErrors: { [key: string]: string };
-  onSubmit: (lgpd: boolean) => void;
+  onSubmit: (lgpd: boolean, captchaToken: string | null) => void;
   onBack: () => void;
 }
 
@@ -20,6 +21,7 @@ export const DataStep: React.FC<Props> = ({
 }) => {
   const [lgpdConsent, setLgpdConsent] = useState(false);
   const [noCPF, setNoCPF] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
@@ -41,6 +43,10 @@ export const DataStep: React.FC<Props> = ({
     }
   };
 
+  const handleCaptchaChange = (token: string | null) => {
+    setCaptchaToken(token);
+  };
+
   return (
     <div className="bg-white p-8 rounded-[2.5rem] shadow-2xl border-t-8 border-ibicuitinga-royalBlue space-y-6 animate-fade-in">
       <div className="space-y-5">
@@ -55,7 +61,9 @@ export const DataStep: React.FC<Props> = ({
             onChange={handleInputChange}
             placeholder="Ex: José da Silva Santos"
             maxLength={60}
-            className={`w-full bg-gray-50 border-2 rounded-2xl p-4 focus:border-ibicuitinga-royalBlue outline-none font-bold text-ibicuitinga-navy transition-colors ${formErrors.name ? "border-red-500 bg-red-50/30" : "border-gray-100"}`}
+            className={`w-full bg-gray-50 border-2 rounded-2xl p-4 focus:border-ibicuitinga-royalBlue outline-none font-bold text-ibicuitinga-navy transition-colors ${
+              formErrors.name ? "border-red-500 bg-red-50/30" : "border-gray-100"
+            }`}
           />
           {formErrors.name && (
             <p className="text-[10px] text-red-500 font-bold mt-1.5 ml-1 flex items-center gap-1 animate-shake">
@@ -76,7 +84,9 @@ export const DataStep: React.FC<Props> = ({
               onChange={handleInputChange}
               placeholder="(88) 99999-9999"
               maxLength={15}
-              className={`w-full bg-gray-50 border-2 rounded-2xl p-4 focus:border-ibicuitinga-royalBlue outline-none font-bold text-ibicuitinga-navy transition-colors ${formErrors.phone ? "border-red-500 bg-red-50/30" : "border-gray-100"}`}
+              className={`w-full bg-gray-50 border-2 rounded-2xl p-4 focus:border-ibicuitinga-royalBlue outline-none font-bold text-ibicuitinga-navy transition-colors ${
+                formErrors.phone ? "border-red-500 bg-red-50/30" : "border-gray-100"
+              }`}
             />
             {formErrors.phone && (
               <p className="text-[10px] text-red-500 font-bold mt-1.5 ml-1 flex items-center gap-1 animate-shake">
@@ -92,12 +102,14 @@ export const DataStep: React.FC<Props> = ({
             <input
               type="text"
               name="cpf"
-              value={data.cpf || ''}
+              value={data.cpf || ""}
               onChange={handleInputChange}
               placeholder="000.000.000-00"
               disabled={noCPF}
               maxLength={14}
-              className={`w-full bg-gray-50 border-2 rounded-2xl p-4 focus:border-ibicuitinga-royalBlue outline-none font-bold text-ibicuitinga-navy transition-colors ${noCPF ? "bg-gray-100 text-gray-400 cursor-not-allowed" : ""} ${formErrors.cpf ? "border-red-500 bg-red-50/30" : "border-gray-100"}`}
+              className={`w-full bg-gray-50 border-2 rounded-2xl p-4 focus:border-ibicuitinga-royalBlue outline-none font-bold text-ibicuitinga-navy transition-colors ${
+                noCPF ? "bg-gray-100 text-gray-400 cursor-not-allowed" : ""
+              } ${formErrors.cpf ? "border-red-500 bg-red-50/30" : "border-gray-100"}`}
             />
             {formErrors.cpf && (
               <p className="text-[10px] text-red-500 font-bold mt-1.5 ml-1 flex items-center gap-1 animate-shake">
@@ -129,11 +141,13 @@ export const DataStep: React.FC<Props> = ({
             <input
               type="text"
               name="cep"
-              value={data.cep || ''}
+              value={data.cep || ""}
               onChange={handleInputChange}
               placeholder="00000-000"
               maxLength={9}
-              className={`w-full bg-gray-50 border-2 rounded-2xl p-4 focus:border-ibicuitinga-royalBlue outline-none font-bold text-ibicuitinga-navy transition-colors ${formErrors.cep ? "border-red-500 bg-red-50/30" : "border-gray-100"}`}
+              className={`w-full bg-gray-50 border-2 rounded-2xl p-4 focus:border-ibicuitinga-royalBlue outline-none font-bold text-ibicuitinga-navy transition-colors ${
+                formErrors.cep ? "border-red-500 bg-red-50/30" : "border-gray-100"
+              }`}
             />
             {formErrors.cep && (
               <p className="text-[10px] text-red-500 font-bold mt-1.5 ml-1 flex items-center gap-1 animate-shake">
@@ -159,6 +173,13 @@ export const DataStep: React.FC<Props> = ({
         </label>
       </div>
 
+      <div className="flex justify-center py-2">
+        <ReCAPTCHA
+          sitekey="6LdNkIgsAAAAAOXIU-9HQv9JPN-iyMf51o5lLsWy" 
+          onChange={handleCaptchaChange}
+        />
+      </div>
+
       <div className="flex gap-4 pt-2">
         <button
           onClick={onBack}
@@ -167,8 +188,8 @@ export const DataStep: React.FC<Props> = ({
           Voltar
         </button>
         <button
-          onClick={() => onSubmit(lgpdConsent)}
-          disabled={!lgpdConsent || !data.name}
+          onClick={() => onSubmit(lgpdConsent, captchaToken)}
+          disabled={!lgpdConsent || !data.name || !captchaToken}
           className="flex-[2] bg-ibicuitinga-navy text-white py-4 rounded-2xl font-black shadow-xl disabled:opacity-50 active:scale-95 transition-transform"
         >
           Confirmar Protocolo

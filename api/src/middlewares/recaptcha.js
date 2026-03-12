@@ -6,7 +6,7 @@ export const verifyRecaptcha = async (req, res, next) => {
   }
 
   try {
-    const secretKey = "6LfC8YAsAAAAAJOA8gZXbSG1Gx6HgEm9QrtKJ_Q3";
+    const secretKey = "6LdNkIgsAAAAAHFuik-BUTlCgioWT6w9Pd5MOcf9";
     
     const response = await fetch('https://www.google.com/recaptcha/api/siteverify', {
       method: 'POST',
