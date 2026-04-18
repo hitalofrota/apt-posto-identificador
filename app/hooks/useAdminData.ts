@@ -80,7 +80,7 @@ export const useAdminData = (isAuthenticated: boolean) => {
   };
 
   const handleBlockSlot = async (selectedDate: string, time: string) => {
-    const slotKey = `${selectedDate}_${time}`;
+    const slotKey = `${selectedDate}|${time}`;
     const previousSlots = [...state.blockedSlots];
 
     setState(prev => ({

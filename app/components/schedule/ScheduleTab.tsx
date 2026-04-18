@@ -6,6 +6,7 @@ import { TimeSlot } from "../../types";
 
 interface ScheduleTabProps {
   blockedDates: string[];
+  blockedSlots: string[];
   actions: {
     handleBlockDate: (date: string) => Promise<void>;
     handleBlockSlot: (date: string, time: string) => Promise<void>;
@@ -16,6 +17,7 @@ interface ScheduleTabProps {
 
 export const ScheduleTab: React.FC<ScheduleTabProps> = ({
   blockedDates,
+  blockedSlots,
   actions,
   checkMonthBlocked
 }) => {
@@ -138,10 +140,9 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({
             })
             .map((slot) => {
               const isTimePassed = isToday && slot.time < currentTime;
-
+              const isManuallyBlocked = blockedSlots.includes(`${selectedDate}|${slot.time}`);
               const isBlocked = isDateBlocked || !slot.available;
-
-              const isButtonDisabled = isBlocked || isLoadingSlots || isTimePassed;
+              const isButtonDisabled = isDateBlocked || (!isManuallyBlocked && !slot.available) || isLoadingSlots || isTimePassed;
 
               return (
                 <button

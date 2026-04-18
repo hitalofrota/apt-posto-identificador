@@ -40,3 +40,6 @@ docker stop $(docker ps -q)
 # Instalar o recaptcha
 docker-compose exec app npm install react-google-recaptcha
 
+# Ler a documentacao para criar usuario
+create-user.md
+

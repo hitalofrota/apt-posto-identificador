@@ -5,21 +5,23 @@ import { PrismaClient } from '@prisma/client';
 import appointmentRoutes from './src/routes/appointmentRoutes.js';
 import blockRoutes from './src/routes/blockRoutes.js';
 import { authController } from './src/controllers/authController.js';
-import { userService } from './src/services/userService.js';
 
 const prisma = new PrismaClient();
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-userService.createAdminInitial().catch(err => console.error("❌ Erro ao criar admin inicial:", err.message));
 
 app.post('/login', authController.login);
 
 app.post('/users/signup/create', async (req, res) => {
   try {
-    const { username, password, name } = req.body;
-    
+    const { username, password, name, signupSecret } = req.body;
+
+    if (!signupSecret || signupSecret !== process.env.SIGNUP_SECRET) {
+      return res.status(403).json({ error: "Chave de cadastro inválida" });
+    }
+
     const existing = await prisma.user.findUnique({ where: { username } });
     if (existing) return res.status(400).json({ error: "Usuário já cadastrado" });
 
