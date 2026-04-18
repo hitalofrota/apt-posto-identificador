@@ -6,14 +6,13 @@ import appointmentRoutes from './src/routes/appointmentRoutes.js';
 import blockRoutes from './src/routes/blockRoutes.js';
 import { authController } from './src/controllers/authController.js';
 import { userService } from './src/services/userService.js';
-import { authMiddleware } from './src/middlewares/auth.js';
 
 const prisma = new PrismaClient();
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-userService.createAdminInitial();
+userService.createAdminInitial().catch(err => console.error("❌ Erro ao criar admin inicial:", err.message));
 
 app.post('/login', authController.login);
 
