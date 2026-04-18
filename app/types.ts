@@ -13,7 +13,6 @@ export interface Service {
 }
 
 export interface Citizen {
-  id: string;
   name: string;
   hasCpf: boolean;
   cep?: string;
@@ -30,7 +29,6 @@ export interface Appointment {
   customDescription?: string;
   date: string;
   time: string;
-  citizenId: string;
   citizen: Citizen;
   createdAt: string;
   status: 'scheduled' | 'completed' | 'cancelled';

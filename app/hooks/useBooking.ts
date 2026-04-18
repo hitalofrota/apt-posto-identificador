@@ -51,13 +51,13 @@ export const useBooking = () => {
     confirmedAppointment: null as Appointment | null,
   });
 
-  const validateAndSubmit = async (lgpdConsent: boolean) => {
+  const validateAndSubmit = async (lgpdConsent: boolean, captchaToken: string | null) => {
     const errors = validateCitizenForm(citizenData);
     if (Object.keys(errors).length > 0) {
       setUiState((prev) => ({ ...prev, formErrors: errors }));
       return;
     }
-    if (!lgpdConsent || !selectedService || !selectedDate || !selectedTime)
+    if (!lgpdConsent || !captchaToken || !selectedService || !selectedDate || !selectedTime)
       return;
 
     setUiState((prev) => ({ ...prev, isSubmitting: true, formErrors: {} }));
@@ -69,10 +69,7 @@ export const useBooking = () => {
         : null;
 
       if (cleanCpf) {
-        const alreadyHasBooking = await hasActiveAppointmentOnDay(
-          cleanCpf,
-          dateStr,
-        );
+        const alreadyHasBooking = await hasActiveAppointmentOnDay(cleanCpf, dateStr);
         if (alreadyHasBooking) {
           setUiState((prev) => ({
             ...prev,
@@ -94,6 +91,7 @@ export const useBooking = () => {
         citizenPhone: citizenData.phone.replace(/\D/g, ""),
         citizenEmail: citizenData.email || null,
         citizenCep: citizenData.cep?.replace(/\D/g, ""),
+        captchaToken,
         status: "scheduled" as const,
       };
 

@@ -103,6 +103,9 @@ export const appointmentService = {
     if (!cleanCep || cleanCep.length !== 8) throw new Error("CEP_INVALIDO");
 
     const cleanCpf = citizenCpf?.replace(/\D/g, "");
+    if (citizenHasCpf && cleanCpf) {
+      if (cleanCpf.length !== 11 || /^(\d)\1{10}$/.test(cleanCpf)) throw new Error("CPF_INVALIDO");
+    }
     const cleanPhone = citizenPhone?.replace(/\D/g, "");
 
     if (!isLocalCity(cleanCep)) {
