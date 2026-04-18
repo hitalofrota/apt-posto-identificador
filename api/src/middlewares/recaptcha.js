@@ -1,4 +1,6 @@
 export const verifyRecaptcha = async (req, res, next) => {
+  if (process.env.NODE_ENV !== 'production') return next();
+
   const { captchaToken } = req.body;
 
   if (!captchaToken) {

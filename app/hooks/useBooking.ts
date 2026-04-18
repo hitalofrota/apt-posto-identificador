@@ -57,7 +57,7 @@ export const useBooking = () => {
       setUiState((prev) => ({ ...prev, formErrors: errors }));
       return;
     }
-    if (!lgpdConsent || !captchaToken || !selectedService || !selectedDate || !selectedTime)
+    if (!lgpdConsent || !selectedService || !selectedDate || !selectedTime)
       return;
 
     setUiState((prev) => ({ ...prev, isSubmitting: true, formErrors: {} }));
@@ -91,7 +91,6 @@ export const useBooking = () => {
         citizenPhone: citizenData.phone.replace(/\D/g, ""),
         citizenEmail: citizenData.email || null,
         citizenCep: citizenData.cep?.replace(/\D/g, ""),
-        captchaToken,
         status: "scheduled" as const,
       };
 

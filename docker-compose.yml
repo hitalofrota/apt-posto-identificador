@@ -27,6 +27,7 @@ services:
       DATABASE_URL: "postgresql://user_admin:password123@db:5432/scheduling_system?schema=public"
       JWT_SECRET: "sua_chave_secreta_aqui"
       SIGNUP_SECRET: "troque-esta-chave-por-uma-segura"
+      NODE_ENV: "development"
     volumes:
       - ./api:/app
       - /app/node_modules
