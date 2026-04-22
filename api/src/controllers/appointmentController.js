@@ -46,6 +46,7 @@ export const appointmentController = {
           error: "Limite de atendimentos por munícipios de cidades vizinhas atingido. Máximo 2 atendimentos." 
         });
       }
+      if (e.message === "HORARIO_INDISPONIVEL") return res.status(409).json({ error: "Horário indisponível." });
       if (e.message === "CEP_INVALIDO") return res.status(400).json({ error: "CEP inválido." });
       res.status(400).json({ error: "Erro ao criar agendamento." });
     }

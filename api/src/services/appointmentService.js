@@ -115,6 +115,17 @@ export const appointmentService = {
       if (activeCount >= 2) throw new Error("LIMITE_VIZINHO_ATINGIDO");
     }
 
+    const slotTaken = await prisma.appointment.findFirst({
+      where: { date: sanitizedDate, time: sanitizedTime, status: 'scheduled' }
+    });
+    if (slotTaken) throw new Error("HORARIO_INDISPONIVEL");
+
+    const blockedSlot = await prisma.blockedSlot.findFirst({
+      where: { date: sanitizedDate, time: sanitizedTime }
+    });
+    const blockedDate = await prisma.blockedDate.findUnique({ where: { date: sanitizedDate } });
+    if (blockedSlot || blockedDate) throw new Error("HORARIO_INDISPONIVEL");
+
     const newAppointment = await prisma.appointment.create({
       data: {
         ...rest,
