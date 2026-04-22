@@ -1,11 +1,11 @@
 import { Router } from 'express';
 import { appointmentController } from '../controllers/appointmentController.js';
 import { authMiddleware } from '../middlewares/auth.js';
-import { slotsLimiter } from '../middlewares/rateLimiter.js';
 
 const router = Router();
 
-router.get('/slots', slotsLimiter, appointmentController.getSlots);
+//aqui que é adicionado o ratelimit
+router.get('/slots', appointmentController.getSlots);
 
 router.get('/citizen/:cpf', appointmentController.listByCpf);
 router.post('/', appointmentController.create);
