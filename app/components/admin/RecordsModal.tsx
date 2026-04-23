@@ -10,19 +10,22 @@ interface RecordsModalProps {
   onClose: () => void;
   appointments: Appointment[];
   title: string;
+  showTabs?: boolean;
   onRefresh: () => void;
 }
 
-export const RecordsModal: React.FC<RecordsModalProps> = ({ 
-  isOpen, onClose, appointments: initialAppointments, title, onRefresh 
+export const RecordsModal: React.FC<RecordsModalProps> = ({
+  isOpen, onClose, appointments: initialAppointments, title, showTabs = false, onRefresh
 }) => {
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [selectedToEdit, setSelectedToEdit] = useState<Appointment | null>(null);
   const [localAppointments, setLocalAppointments] = useState<Appointment[]>(initialAppointments);
+  const [activeTab, setActiveTab] = useState<'all' | 'scheduled' | 'completed' | 'cancelled'>('all');
 
   useEffect(() => {
     setLocalAppointments(initialAppointments);
+    setActiveTab('all');
   }, [initialAppointments]);
 
   if (!isOpen) return null;
@@ -49,6 +52,17 @@ export const RecordsModal: React.FC<RecordsModalProps> = ({
     }
   };
 
+  const tabs = [
+    { key: 'all', label: 'Todos', status: null },
+    { key: 'scheduled', label: 'Agendados', status: 'scheduled' },
+    { key: 'completed', label: 'Concluídos', status: 'completed' },
+    { key: 'cancelled', label: 'Cancelados', status: 'cancelled' },
+  ] as const;
+
+  const filteredAppointments = activeTab === 'all'
+    ? localAppointments
+    : localAppointments.filter(app => app.status === activeTab);
+
   return (
     <>
       <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-ibicuitinga-navy/40 backdrop-blur-sm text-left">
@@ -56,13 +70,39 @@ export const RecordsModal: React.FC<RecordsModalProps> = ({
           <div className="p-8 border-b-4 border-ibicuitinga-yellow flex justify-between items-center">
             <div>
               <h2 className="text-2xl font-black text-ibicuitinga-navy uppercase">{title}</h2>
-              <p className="text-[10px] font-black text-gray-400 uppercase">{localAppointments.length} REGISTROS</p>
+              <p className="text-[10px] font-black text-gray-400 uppercase">{filteredAppointments.length} REGISTROS</p>
             </div>
             <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full border border-gray-100"><X size={20} /></button>
           </div>
 
+          {showTabs && (
+            <div className="flex gap-2 px-8 pt-5 pb-0 bg-white">
+              {tabs.map(tab => (
+                <button
+                  key={tab.key}
+                  onClick={() => setActiveTab(tab.key)}
+                  className={`px-4 py-2 text-[11px] font-black uppercase rounded-t-xl border-b-2 transition-all ${
+                    activeTab === tab.key
+                      ? 'border-ibicuitinga-yellow text-ibicuitinga-navy bg-gray-50'
+                      : 'border-transparent text-gray-400 hover:text-ibicuitinga-navy'
+                  }`}
+                >
+                  {tab.label}
+                  <span className={`ml-1.5 px-1.5 py-0.5 rounded-md text-[9px] ${
+                    activeTab === tab.key ? 'bg-ibicuitinga-yellow text-ibicuitinga-navy' : 'bg-gray-100 text-gray-400'
+                  }`}>
+                    {tab.key === 'all' ? localAppointments.length : localAppointments.filter(a => a.status === tab.key).length}
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
+
           <div className="p-6 max-h-[60vh] overflow-y-auto space-y-4 bg-gray-50/50">
-            {localAppointments.map((app) => {
+            {filteredAppointments.length === 0 && (
+              <p className="text-center text-sm font-bold text-gray-400 uppercase py-8">Nenhum registro encontrado</p>
+            )}
+            {filteredAppointments.map((app) => {
               const isActionDisabled = app.status !== 'scheduled';
 
               return (

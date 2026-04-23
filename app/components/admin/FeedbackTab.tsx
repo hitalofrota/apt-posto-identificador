@@ -57,9 +57,11 @@ export const FeedbackTab: React.FC<FeedbackTabProps> = ({ appointments }) => {
                 </div>
               </div>
 
-              <p className="text-ibicuitinga-navy italic font-bold text-lg leading-relaxed">
-                "{item.feedback || 'O cidadão não deixou um comentário por escrito.'}"
-              </p>
+              {item.feedback && (
+                <p className="text-ibicuitinga-navy italic font-bold text-lg leading-relaxed">
+                  "{item.feedback}"
+                </p>
+              )}
 
               <div className="inline-block bg-ibicuitinga-skyBlue/10 text-ibicuitinga-royalBlue text-[10px] font-black px-3 py-1 rounded-lg uppercase tracking-wider">
                 {item.serviceName}

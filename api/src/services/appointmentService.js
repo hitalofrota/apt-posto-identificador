@@ -72,7 +72,7 @@ export const appointmentService = {
 
   async getAll() {
     await syncAppointmentStatuses();
-    const apps = await prisma.appointment.findMany({ orderBy: { date: 'desc' } });
+    const apps = await prisma.appointment.findMany({ orderBy: { date: 'asc' } });
     return apps.map(app => mapAppointment(app));
   },
 
@@ -81,7 +81,7 @@ export const appointmentService = {
     const cleanCpf = cpf.replace(/\D/g, "");
     const apps = await prisma.appointment.findMany({
       where: { citizenCpf: cleanCpf },
-      orderBy: { date: 'desc' }
+      orderBy: { date: 'asc' }
     });
     return apps.map(app => mapAppointment(app));
   },

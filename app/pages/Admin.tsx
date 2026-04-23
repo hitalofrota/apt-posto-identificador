@@ -34,6 +34,7 @@ const Admin: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalTitle, setModalTitle] = useState("");
   const [modalData, setModalData] = useState<Appointment[]>([]);
+  const [modalShowTabs, setModalShowTabs] = useState(false);
 
   const { 
     appointments, 
@@ -63,18 +64,22 @@ const Admin: React.FC = () => {
 
     let data = filteredAppointments;
     let title = "Registros Detalhados";
+    let showTabs = false;
 
     if (type === "Para Hoje") {
-      const today = getTodayStr(); 
+      const today = getTodayStr();
       data = filteredAppointments.filter(a => a.date === today);
       title = "Agendamentos de Hoje";
     } else if (type === "Ativos") {
       data = filteredAppointments.filter(a => a.status === 'scheduled');
       title = "Agendamentos Ativos";
+    } else if (type === "Total Geral") {
+      showTabs = true;
     }
 
     setModalData(data);
     setModalTitle(title);
+    setModalShowTabs(showTabs);
     setIsModalOpen(true);
   };
 
@@ -222,14 +227,15 @@ const Admin: React.FC = () => {
         {activeTab === "feedback" && <FeedbackTab appointments={filteredAppointments} />}
       </div>
 
-      <RecordsModal 
+      <RecordsModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         appointments={modalData}
         title={modalTitle}
+        showTabs={modalShowTabs}
         onRefresh={() => {
           refreshData();
-          setIsModalOpen(false); 
+          setIsModalOpen(false);
         }}
       />
     </div>
