@@ -66,13 +66,14 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({ appointments }) => {
     const tableData = filtered.map((app) => [
       app.protocol,
       app.citizen.name,
+      app.citizen.phone || "-",
       app.serviceName,
       `${displayDate(app.date)} ${app.time}`,
       app.status === "scheduled" ? "Ativo" : app.status === "cancelled" ? "Cancelado" : "Concluído",
     ]);
 
     autoTable(doc, {
-      head: [["Protocolo", "Cidadão", "Serviço", "Data/Hora", "Status"]],
+      head: [["Protocolo", "Cidadão", "Telefone", "Serviço", "Data/Hora", "Status"]],
       body: tableData,
       startY: 50,
       theme: "grid",
