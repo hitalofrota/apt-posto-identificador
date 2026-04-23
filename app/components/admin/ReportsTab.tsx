@@ -45,7 +45,11 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({ appointments }) => {
     doc.setFontSize(11);
     doc.text(`Gerado em: ${format(new Date(), "dd/MM/yyyy HH:mm")}`, 14, 30);
 
-    let filtered = [...appointments];
+    let filtered = [...appointments].sort((a, b) => {
+      const dateCompare = a.date.localeCompare(b.date);
+      if (dateCompare !== 0) return dateCompare;
+      return a.time.localeCompare(b.time);
+    });
 
     if (reportDate) {
       filtered = filtered.filter((app) => app.date === reportDate);
