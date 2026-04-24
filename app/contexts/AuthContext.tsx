@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
+import { registerLogoutCallback } from "../services/api";
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -20,6 +21,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.removeItem("@AdminToken");
     setIsAuthenticated(false);
   };
+
+  useEffect(() => {
+    registerLogoutCallback(logout);
+  }, []);
 
   return (
     <AuthContext.Provider value={{ isAuthenticated, login, logout }}>

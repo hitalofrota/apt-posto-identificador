@@ -5,9 +5,15 @@ const api = axios.create({
   baseURL: "/api"
 });
 
+let _logoutCallback: (() => void) | null = null;
+
+export const registerLogoutCallback = (cb: () => void) => {
+  _logoutCallback = cb;
+};
+
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("@AdminToken");
-  
+
   if (token && token !== "undefined" && token !== "null" && token.trim() !== "") {
     if (config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -17,11 +23,21 @@ api.interceptors.request.use((config) => {
       delete config.headers.Authorization;
     }
   }
-  
+
   return config;
 }, (error) => {
   return Promise.reject(error);
 });
+
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      _logoutCallback?.();
+    }
+    return Promise.reject(error);
+  }
+);
 
 export const appointmentsApi = {
   getAll: () => api.get<Appointment[]>("/appointments").then(r => r.data),
