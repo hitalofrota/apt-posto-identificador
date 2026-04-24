@@ -48,6 +48,7 @@ export const useBooking = () => {
     showErrorModal: false,
     errorMessage: "",
     showDoubleBookingAlert: false,
+    showTimeConflictModal: false,
     confirmedAppointment: null as Appointment | null,
   });
 
@@ -100,11 +101,18 @@ export const useBooking = () => {
     } catch (err: any) {
       const backendError =
         err.response?.data?.error || "Erro ao realizar agendamento.";
-      setUiState((prev) => ({
-        ...prev,
-        showErrorModal: true,
-        errorMessage: backendError,
-      }));
+      if (backendError === "Horário indisponível.") {
+        setUiState((prev) => ({
+          ...prev,
+          showTimeConflictModal: true,
+        }));
+      } else {
+        setUiState((prev) => ({
+          ...prev,
+          showErrorModal: true,
+          errorMessage: backendError,
+        }));
+      }
     } finally {
       setUiState((prev) => ({ ...prev, isSubmitting: false }));
     }
@@ -124,6 +132,8 @@ export const useBooking = () => {
       setUiState((prev) => ({ ...prev, showErrorModal: val })),
     setShowDoubleBookingAlert: (val: boolean) =>
       setUiState((prev) => ({ ...prev, showDoubleBookingAlert: val })),
+    setShowTimeConflictModal: (val: boolean) =>
+      setUiState((prev) => ({ ...prev, showTimeConflictModal: val })),
     handleServiceSelect: (service: Service) => {
       setSelectedService(service);
       setTimeout(() => setCurrentStep(1), 200);
@@ -142,6 +152,7 @@ export const useBooking = () => {
         showErrorModal: false,
         errorMessage: "",
         showDoubleBookingAlert: false,
+        showTimeConflictModal: false,
         confirmedAppointment: null,
       });
     },

@@ -5,7 +5,7 @@ import { ServiceStep } from "../components/booking/ServiceStep";
 import { DateTimeStep } from "../components/booking/DateTimeStep";
 import { DataStep } from "../components/booking/DataStep";
 import { SuccessStep } from "../components/booking/SuccessStep";
-import { Check, X, AlertTriangle, Info, MapPinOff } from "lucide-react";
+import { Check, X, AlertTriangle, Info, MapPinOff, Clock } from "lucide-react";
 
 const STEPS = ["Serviço", "Data & Hora", "Dados", "Sucesso"];
 
@@ -31,11 +31,14 @@ const Booking: React.FC = () => {
     showErrorModal,
     setShowErrorModal,
     errorMessage,
+    showTimeConflictModal,
+    setShowTimeConflictModal,
   } = useBooking();
 
   const handleCloseAndGoHome = () => {
     setShowErrorModal(false);
     setShowDoubleBookingAlert(false);
+    setShowTimeConflictModal(false);
     navigate("/");
   };
 
@@ -124,6 +127,36 @@ const Booking: React.FC = () => {
               </h3>
               <p className="text-gray-500 font-bold leading-relaxed">
                 {errorMessage}
+              </p>
+            </div>
+            <button
+              onClick={handleCloseAndGoHome}
+              className="w-full bg-ibicuitinga-navy text-white py-5 rounded-2xl font-black text-lg shadow-xl active:scale-95 transition-transform"
+            >
+              Entendi, obrigado
+            </button>
+          </div>
+        </div>
+      )}
+
+      {showTimeConflictModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-ibicuitinga-navy/90 backdrop-blur-md p-6">
+          <div className="bg-white rounded-[3rem] shadow-2xl max-w-md w-full p-10 text-center space-y-6 animate-scale-in relative border-t-8 border-yellow-500">
+            <button
+              onClick={handleCloseAndGoHome}
+              className="absolute top-6 right-6 p-2 text-gray-300 hover:text-ibicuitinga-navy transition-colors"
+            >
+              <X size={24} />
+            </button>
+            <div className="w-20 h-20 bg-yellow-50 rounded-3xl flex items-center justify-center mx-auto text-yellow-500">
+              <Clock size={48} strokeWidth={3} />
+            </div>
+            <div className="space-y-3">
+              <h3 className="text-2xl font-black text-ibicuitinga-navy uppercase tracking-tighter">
+                Horário Indisponível
+              </h3>
+              <p className="text-gray-500 font-bold leading-relaxed">
+                Identificamos que o horário já foi preenchido por outro usuário.
               </p>
             </div>
             <button
